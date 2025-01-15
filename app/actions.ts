@@ -1,16 +1,17 @@
 'use server'
 
+import { personalData } from '@/utils/data/personal-data'
 import webpush from 'web-push'
 
 webpush.setVapidDetails(
-    '<mailto:your-email@example.com>',
+    '<mailto:' + personalData.contact.email + '>',
     process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
     process.env.VAPID_PRIVATE_KEY!
 )
 
-let subscription: PushSubscription | null = null
+let subscription: webpush.PushSubscription | null = null
 
-export async function subscribeUser(sub: PushSubscription) {
+export async function subscribeUser(sub: webpush.PushSubscription) {
     subscription = sub
     // In a production environment, you would want to store the subscription in a database
     // For example: await db.subscriptions.create({ data: sub })

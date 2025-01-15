@@ -44,15 +44,6 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: '/(.*)',
-        headers: [
-          {
-            key: 'Referrer-Policy',
-            value: 'no-referrer-when-downgrade',
-          },
-        ],
-      },
-      {
         source: '/sw.js',
         headers: [
           {

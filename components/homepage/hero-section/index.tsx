@@ -74,7 +74,9 @@ const HeroSection: React.FC = () => {
               onMouseEnter={() => setIsNameHovered(true)}
               onMouseLeave={() => setIsNameHovered(false)}
             >
+              <span > &lt;</span>
               {personalData.name}
+              <span > /&gt;</span>
               {isNameHovered && namePreview && (
                 <div className="absolute top-full left-0 mt-2 w-64 rounded-lg bg-gray-800 text-white shadow-lg p-3 z-50 md:w-80 lg:w-96">
                   <Image

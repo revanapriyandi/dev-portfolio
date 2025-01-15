@@ -1,6 +1,13 @@
 import { personalData } from "@/utils/data/personal-data";
+import { sendGAEvent } from "@next/third-parties/google";
 import Link from "next/link";
 import { IoStar } from "react-icons/io5";
+
+const onClickFunction = (href: string) => {
+  sendGAEvent('event', 'buttonClicked', { value: href })
+
+  return href;
+}
 
 const Footer: React.FC = () => {
   return (
@@ -14,7 +21,7 @@ const Footer: React.FC = () => {
             © Developer Portfolio by{" "}
             <Link
               target="_blank"
-              href={personalData.socialLinks.github}
+              href={onClickFunction(personalData.socialLinks.github)}
               className="text-[#16f2b3]"
             >
               {personalData.name}
@@ -23,7 +30,7 @@ const Footer: React.FC = () => {
           <div className="flex items-center gap-5">
             <Link
               target="_blank"
-              href={personalData.socialLinks.github}
+              href={onClickFunction(personalData.socialLinks.github)}
               className="flex items-center gap-2 uppercase hover:text-[#16f2b3]"
             >
               <IoStar />

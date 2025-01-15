@@ -1,14 +1,20 @@
 import { personalData } from "@/utils/data/personal-data";
+import { sendGAEvent } from "@next/third-parties/google";
 import { IconBrandGithub } from "@tabler/icons-react";
 import Link from "next/link";
 
+const onClickFunction = (href: string) => {
+  sendGAEvent('event', 'buttonClicked', { value: href })
+
+  return href;
+}
 function Navbar() {
   return (
     <nav className="bg-transparent sticky top-0 z-50" style={{ backdropFilter: "blur(10px)", zIndex: 9999 }}>
       <div className="sm:hidden md:flex lg:flex items-center justify-between py-5">
         <div className="hidden md:flex flex-shrink-0 items-center">
           <Link
-            href="/"
+            href={onClickFunction('/')}
             className=" text-[#16f2b3] text-3xl font-bold"
           >
             {personalData.name}

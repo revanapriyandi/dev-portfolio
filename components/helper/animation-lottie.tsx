@@ -1,6 +1,6 @@
 "use client";
 
-import Lottie from "lottie-react";
+import Lottie from "react-lottie";
 
 interface AnimationLottieProps {
   animationPath: object;
@@ -17,7 +17,7 @@ const AnimationLottie: React.FC<AnimationLottieProps> = ({ animationPath, width 
     },
   };
 
-  return <Lottie {...defaultOptions} />;
+  return <Lottie options={defaultOptions} />;
 };
 
 export default AnimationLottie;

@@ -1,4 +1,4 @@
-import { GoogleTagManager } from "@next/third-parties/google";
+import { GoogleAnalytics, GoogleTagManager } from "@next/third-parties/google";
 import { Inter } from "next/font/google";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -49,8 +49,9 @@ interface RootLayoutProps {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   const gtmId = process.env.NEXT_PUBLIC_GTM || '';
-  if (!gtmId) {
-    console.error('GTM ID is missing!');
+  const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || '';
+  if (!gtmId || !gaId) {
+    console.error('Please provide GTM and GA_MEASUREMENT_ID in .env file');
   }
   return (
     <html lang="en" dir="ltr">
@@ -59,6 +60,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         {children}
       </body>
       <GoogleTagManager gtmId={gtmId} />
+      <GoogleAnalytics gaId={gtmId} />
     </html>
   );
 }

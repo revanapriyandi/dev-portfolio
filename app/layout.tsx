@@ -7,7 +7,7 @@ import "@/styles/globals.scss";
 import { ReactNode } from "react";  // Import ReactNode for typing children
 import { personalData } from "@/utils/data/personal-data";
 import { Metadata, Viewport } from "next";
-
+import { Analytics } from "@vercel/analytics/react"
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -61,6 +61,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
       </body>
       <GoogleTagManager gtmId={gtmId} />
       <GoogleAnalytics gaId={gtmId} />
+      <Analytics />
     </html>
   );
 }

@@ -11,7 +11,7 @@ interface CaptchaResponse {
 
 export async function POST(request: Request): Promise<NextResponse> {
     const reqBody: RequestBody = await request.json();
-    const secret_key: string | undefined = process.env.NEXT_PUBLIC_RECAPTCHA_SECRET_KEY;
+    const secret_key: string | undefined = process.env.RECAPTCHA_SECRET_KEY;
 
     if (!secret_key) {
         return NextResponse.json(

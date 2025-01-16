@@ -11,6 +11,13 @@ import { BsInstagram } from 'react-icons/bs';
 import { SiFreelancer } from 'react-icons/si';
 
 function ContactSection() {
+  const formatInternationalNumber = (phone: string, countryCode = '62') => {
+    const cleanedPhone = phone.replace(/\D+/g, '');
+    if (!cleanedPhone.startsWith(countryCode)) {
+      return `${countryCode}${cleanedPhone.replace(/^0/, '')}`;
+    }
+    return cleanedPhone;
+  };
   return (
     <div id="contact" className="my-12 lg:my-16 relative mt-24 text-white">
       <div className="hidden lg:flex flex-col items-center absolute top-24 -right-8">
@@ -35,7 +42,7 @@ function ContactSection() {
                 className="bg-[#8b98a5] p-2 rounded-full hover:bg-[#16f2b3] hover:scale-110 transition-all duration-300 text-gray-800 cursor-pointer"
                 size={36}
               />
-              <Link href={`https://wa.me/${personalData.contact.phone.replace(/\s+/g, '')}`}>
+              <Link href={`https://wa.me/${formatInternationalNumber(personalData.contact.phone)}`}>
                 {personalData.contact.phone}
               </Link>
             </p>

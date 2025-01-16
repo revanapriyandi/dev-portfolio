@@ -40,8 +40,7 @@ export const metadata: Metadata = {
   ],
   keywords: personalData.keywords,
   creator: personalData.username,
-  robots: "index, follow",
-  themeColor: "#16f2b3",
+  robots: "index, follow"
 };
 
 interface RootLayoutProps {

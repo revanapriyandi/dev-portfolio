@@ -59,3 +59,11 @@ body {
   top: calc(var(--index) * 4rem);
 }
 
+.cl-userButtonOuterIdentifier {
+  padding: 0.5rem 1rem;
+  color: #16f2b3;
+  font-weight: 500;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}

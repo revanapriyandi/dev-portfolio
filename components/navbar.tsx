@@ -17,7 +17,9 @@ function Navbar() {
             href={onClickFunction('/')}
             className=" text-[#16f2b3] text-3xl font-bold"
           >
+            <span > &lt;</span>
             {personalData.name}
+            <span > /&gt;</span>
           </Link>
         </div>
 

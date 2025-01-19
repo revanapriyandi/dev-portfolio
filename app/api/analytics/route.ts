@@ -1,9 +1,5 @@
 import { google } from 'googleapis';
 import { NextRequest, NextResponse } from 'next/server';
-import { authenticate } from '@google-cloud/local-auth';
-import { credential } from 'firebase-admin';
-
-const analyticsreporting = google.analyticsreporting('v4');
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function GET(_: NextRequest) {

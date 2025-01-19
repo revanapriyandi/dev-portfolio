@@ -17,6 +17,7 @@ const KofiWidget: React.FC = () => {
                     'floating-chat.donateButton.text': 'Support Me',
                     'floating-chat.donateButton.background-color': '#794bc4',
                     'floating-chat.donateButton.text-color': '#fff',
+                    'floating-chat.position': 'right',
                 });
             }
         };

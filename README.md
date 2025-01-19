@@ -33,7 +33,7 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 
 If you find this project helpful and would like to support me, you can do so via Ko-fi:
 
-[![Ko-fi](https://storage.ko-fi.com/cdn/kofi6.png?v=6)](https://ko-fi.com/revanapriyandi)
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/E1E041YDY)
 
 ## Learn More
 

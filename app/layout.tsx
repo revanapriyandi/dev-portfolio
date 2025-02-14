@@ -9,7 +9,6 @@ import { personalData } from "@/utils/data/personal-data";
 import { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/react";
 import Script from "next/script";
-import KofiWidget from "../components/kofi-widget";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -61,7 +60,6 @@ export default function RootLayout({ children }: RootLayoutProps) {
         {gtmId && <GoogleTagManager gtmId={gtmId} />}
         {gaId && <GoogleAnalytics gaId={gaId} />}
         <Analytics />
-        <KofiWidget />
         <Script
           id="gtag-inline"
           dangerouslySetInnerHTML={{

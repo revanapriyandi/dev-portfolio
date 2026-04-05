@@ -8,7 +8,7 @@ import {
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Sidebar, SidebarBody, SidebarLink } from "../ui/sidebar";
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
+import { Show, SignInButton, UserButton } from "@clerk/nextjs";
 
 export function DashboardSidebar() {
     const links = [
@@ -49,12 +49,16 @@ export function DashboardSidebar() {
                     </div>
                 </div>
                 <div>
-                    <SignedOut>
-                        <SignInButton />
-                    </SignedOut>
-                    <SignedIn>
+                    <Show when="signed-out">
+                        <SignInButton mode="modal">
+                            <button className="rounded-full bg-black px-4 py-2 text-sm text-white transition-colors duration-300 hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200">
+                                Sign in
+                            </button>
+                        </SignInButton>
+                    </Show>
+                    <Show when="signed-in">
                         <UserButton showName />
-                    </SignedIn>
+                    </Show>
                 </div>
             </SidebarBody>
         </Sidebar>

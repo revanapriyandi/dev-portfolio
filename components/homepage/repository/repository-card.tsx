@@ -1,6 +1,3 @@
-import React, { useState, useEffect } from "react";
-import Skeleton from "react-loading-skeleton";
-import "react-loading-skeleton/dist/skeleton.css";
 import { Repository } from "@/types/repository";
 import { formatFileSizeDisplay } from "@/utils/format";
 import { motion } from "framer-motion";
@@ -10,52 +7,23 @@ interface RepositoryCardProps {
 }
 
 const RepositoryCard: React.FC<RepositoryCardProps> = ({ repo }) => {
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Simulate data loading
-    const timeout = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
-    return () => clearTimeout(timeout);
-  }, []);
-
-  if (isLoading) {
-    return (
-      <div className="bg-[#171544] rounded-lg p-4 h-full">
-        <div className="flex items-center gap-2 mb-3">
-          <Skeleton circle width={20} height={20} />
-          <Skeleton width={150} height={20} />
-        </div>
-        <Skeleton count={2} height={16} className="mb-4" />
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <Skeleton circle width={24} height={24} />
-            <Skeleton circle width={24} height={24} />
-            <Skeleton circle width={24} height={24} />
-          </div>
-          <Skeleton width={50} height={20} />
-        </div>
-      </div>
-    );
-  }
-
   return (
     <motion.div
-      className="flex flex-col"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
+      className="group relative h-full"
+      initial={{ opacity: 0, y: 18 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.45 }}
     >
+      <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-[#16f2b3]/0 via-violet-500/0 to-violet-500/0 opacity-0 blur-xl transition-opacity duration-500 group-hover:opacity-100" />
       <motion.div
-        className="hover:shadow-lg transition-all duration-200 ease-out bg-[#171544] rounded-lg p-4 cursor-pointer h-full"
+        className="relative flex h-full cursor-pointer flex-col rounded-2xl border border-white/10 bg-[#171544]/85 p-5 transition-all duration-300"
         onClick={() => window.open(repo.url, "_blank")?.focus()}
-        whileHover={{ scale: 1.05 }} // Hover effect
+        whileHover={{ y: -8, scale: 1.01 }}
       >
-        <div className="flex items-center gap-2 mb-3">
+        <div className="mb-3 flex items-center gap-2">
           <svg
             aria-hidden="true"
-            className="w-4 h-5 text-gray-400"
+            className="h-5 w-4 text-gray-400"
             height="20"
             role="img"
             viewBox="0 0 12 16"
@@ -70,19 +38,16 @@ const RepositoryCard: React.FC<RepositoryCardProps> = ({ repo }) => {
           <h3 className="text-lg font-semibold text-white">{repo.name}</h3>
         </div>
 
-        <p
-          className="text-gray-300 text-sm mb-4 line-clamp-2"
-          title={repo.description}
-        >
+        <p className="mb-4 line-clamp-3 text-sm text-gray-300" title={repo.description}>
           {repo.description}
         </p>
 
-        <div className="flex justify-between items-center mt-auto">
+        <div className="mt-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             {repo.primaryLanguage && (
               <span className="flex items-center gap-1">
                 <div
-                  className="w-3 h-3 rounded-full"
+                  className="h-3 w-3 rounded-full"
                   style={{ backgroundColor: repo.primaryLanguage.color }}
                 ></div>
                 <p className="text-sm text-gray-300">{repo.primaryLanguage.name}</p>
@@ -92,7 +57,7 @@ const RepositoryCard: React.FC<RepositoryCardProps> = ({ repo }) => {
             <span className="flex items-center gap-1">
               <svg
                 aria-hidden="true"
-                className="w-4 h-4 text-gray-400"
+                className="h-4 w-4 text-gray-400"
                 viewBox="0 0 10 16"
               >
                 <path
@@ -107,7 +72,7 @@ const RepositoryCard: React.FC<RepositoryCardProps> = ({ repo }) => {
             <span className="flex items-center gap-1">
               <svg
                 aria-hidden="true"
-                className="w-4 h-4 text-gray-400"
+                className="h-4 w-4 text-gray-400"
                 viewBox="0 0 14 16"
               >
                 <path

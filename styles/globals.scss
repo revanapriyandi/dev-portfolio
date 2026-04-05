@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+  scroll-behavior: smooth;
+}
+
 :root {
   --foreground-rgb: rgb(211, 216, 232);
 }
@@ -34,8 +38,25 @@
 }
 
 body {
+  overflow-x: hidden;
+  min-height: 100vh;
   color: rgb(var(--foreground-rgb));
   background-color: #0d1224;
+  background-image:
+    radial-gradient(circle at top left, rgba(22, 242, 179, 0.16), transparent 28%),
+    radial-gradient(circle at top right, rgba(139, 92, 246, 0.16), transparent 24%),
+    radial-gradient(circle at 50% 20%, rgba(59, 130, 246, 0.1), transparent 30%),
+    linear-gradient(180deg, #07111f 0%, #0d1224 42%, #090f1d 100%);
+  background-attachment: fixed;
+}
+
+[id] {
+  scroll-margin-top: 6rem;
+}
+
+::selection {
+  color: #fff;
+  background: rgba(22, 242, 179, 0.3);
 }
 
 #sticky-card-1 {

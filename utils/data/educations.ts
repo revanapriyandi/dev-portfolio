@@ -3,7 +3,7 @@ export const educations = [
     id: 1,
     title: "Bachelor Degree",
     subtitle: "Informatics Engineering",
-    duration: "2021 - Present",
+    duration: "2021 - 2026",
     institution: "Universitas Borobudur - Jakarta Timur",
   },
   {

@@ -5,6 +5,8 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { FiArrowUp, FiX } from "react-icons/fi";
 import { openWhatsApp } from "./sections";
 import { focusTarget, parseReply, ReplyActions } from "./aksa-actions";
+import AssistantText from "./assistant-text";
+import { buildHandoffMessage } from "@/utils/chat-handoff";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
@@ -64,6 +66,16 @@ export default function Assistant() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
+    const hideForResume = () => { setOpen(false); setUnread(false); };
+    window.addEventListener("aksa:open-resume", hideForResume);
+    window.addEventListener("aksa:resume-visible", hideForResume);
+    return () => {
+      window.removeEventListener("aksa:open-resume", hideForResume);
+      window.removeEventListener("aksa:resume-visible", hideForResume);
+    };
+  }, []);
+
+  useEffect(() => {
     openRef.current = open;
     if (!open) return;
     inputRef.current?.focus();
@@ -82,7 +94,7 @@ export default function Assistant() {
 
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight });
-  }, [messages]);
+  }, [messages, busy]);
 
   // phones: the panel covers the page, so get it out of the way first
   const show = (target: string) => {
@@ -144,6 +156,7 @@ export default function Assistant() {
   };
 
   const last = messages[messages.length - 1];
+  const handoffMessage = buildHandoffMessage(messages);
   const preview = last.role === "assistant" && !last.error ? parseReply(last.content).text : last.content;
 
   return (
@@ -186,7 +199,7 @@ export default function Assistant() {
           >
             <span className="mb-1 block font-mono text-[10px] uppercase tracking-widest text-accent">Aksa{busy ? " · typing" : ""}</span>
             {preview && last.role === "assistant" ? (
-              <span className="line-clamp-3 text-fg">{preview}</span>
+              <span className="line-clamp-3 text-fg">{preview.replace(/\*\*|__/g, "")}</span>
             ) : (
               <span className="flex gap-1 py-1" aria-label="Typing">
                 {[0, 1, 2].map((d) => (
@@ -241,7 +254,7 @@ export default function Assistant() {
                               : "rounded-bl-md border border-line bg-ink/60 text-fg"
                         }`}
                       >
-                        {text || (
+                        {text ? (m.role === "assistant" ? <AssistantText text={text} /> : text) : (
                           <span className="flex gap-1 py-1" aria-label="Typing">
                             {[0, 1, 2].map((d) => (
                               <motion.span key={d} className="h-1.5 w-1.5 rounded-full bg-muted" animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1, repeat: Infinity, delay: d * 0.2 }} />
@@ -251,7 +264,7 @@ export default function Assistant() {
                       </div>
                     )}
                     {/* buttons wait for the full reply so they don't jump around while it streams */}
-                    {reply && !streaming && <ReplyActions reply={reply} onGoto={show} />}
+                    {reply && !streaming && <ReplyActions reply={reply} onGoto={show} handoffMessage={handoffMessage} />}
                   </div>
                 );
               })}
@@ -291,7 +304,7 @@ export default function Assistant() {
               </div>
               <p className="mt-2 flex items-center justify-between px-1 font-mono text-[10px] uppercase tracking-wider text-muted">
                 <span>AI can be wrong · chats are saved</span>
-                <a href="#connect" onClick={openWhatsApp} className="text-fg hover:text-accent">Talk to Revan ↗</a>
+                <a href="#connect" onClick={(e) => openWhatsApp(e, handoffMessage)} className="text-fg hover:text-accent">Talk to Revan ↗</a>
               </p>
             </form>
           </motion.section>

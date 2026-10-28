@@ -3,15 +3,18 @@
 import { AnimatePresence, animate, motion, useInView, useScroll, useTransform, type MotionValue } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
-import { FaGithub, FaLinkedinIn, FaStackOverflow, FaInstagram, FaStar, FaWhatsapp } from "react-icons/fa";
+import { FaGithub, FaLinkedinIn, FaStackOverflow, FaInstagram, FaWhatsapp } from "react-icons/fa";
 import { FiArrowUpRight, FiCheck, FiChevronLeft, FiChevronRight, FiCopy, FiX } from "react-icons/fi";
 import { personalData } from "@/utils/data/personal-data";
+import { githubAccounts } from "@/utils/data/github-accounts";
+import type { RepoCard } from "@/utils/github";
 import { experiences } from "@/utils/data/experience";
 import { certifications, educations } from "@/utils/data/educations";
 import { projectsData } from "@/utils/data/projects-data";
 import { skillsData } from "@/utils/data/skills";
 import { skillsImage } from "@/utils/skill-image";
 import ContactForm from "./contact-form";
+import RepositorySlider from "./repository-slider";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
@@ -431,65 +434,32 @@ export function Projects() {
 
 /* ---------- live github ---------- */
 
-interface Repo {
-  id: number;
-  name: string;
-  description: string | null;
-  html_url: string;
-  language: string | null;
-  stargazers_count: number;
-  pushed_at: string;
-  fork: boolean;
-}
-
 export function Repos() {
-  const [repos, setRepos] = useState<Repo[] | null>(null);
+  const [repos, setRepos] = useState<RepoCard[] | null>(null);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    // ponytail: unauthenticated GitHub API (60 req/h per visitor IP) — plenty for a portfolio
-    fetch(`https://api.github.com/users/${personalData.username}/repos?per_page=100&sort=pushed`)
+    const controller = new AbortController();
+    fetch("/api/repos", { signal: controller.signal })
       .then((r) => (r.ok ? r.json() : Promise.reject()))
-      .then((all: Repo[]) => setRepos(all.filter((r) => !r.fork && r.description && r.name !== personalData.username).slice(0, 6)))
-      .catch(() => setFailed(true));
+      .then((all: RepoCard[]) => setRepos(all.filter((r) => !r.private && r.url)))
+      .catch(() => { if (!controller.signal.aborted) setFailed(true); });
+    return () => controller.abort();
   }, []);
 
   return (
     <Section id="repository">
-      <Head n="04" label="Open source · live feed" title={<>Fresh from<br /><span className="text-muted">my GitHub.</span></>} />
-      {failed ? (
-        <a href={personalData.socialLinks.github} className="font-mono text-accent">github.com/{personalData.username} ↗</a>
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {(repos ?? Array.from({ length: 6 }, () => null)).map((r, i) => (
-            <Reveal key={r?.id ?? i} delay={(i % 3) * 0.08}>
-              {r ? (
-                <a
-                  href={r.html_url}
-                  target="_blank"
-                  rel="noreferrer"
-                  onMouseMove={spot}
-                  className="spotlight group flex h-full min-h-[200px] flex-col rounded-2xl border border-line bg-panel shadow-card p-6 transition-colors hover:border-accent/40"
-                >
-                  <div className="flex items-center justify-between">
-                    <FaGithub className="text-muted" />
-                    <FiArrowUpRight className="text-muted transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent" />
-                  </div>
-                  <h3 className="mt-5 font-mono text-lg font-medium">{r.name}</h3>
-                  <p className="mt-2 line-clamp-3 flex-1 text-sm leading-relaxed text-muted">{r.description}</p>
-                  <div className="mt-5 flex items-center gap-4 font-mono text-xs text-muted">
-                    {r.language && <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-cyan" />{r.language}</span>}
-                    <span className="flex items-center gap-1"><FaStar /> {r.stargazers_count}</span>
-                    <span className="ml-auto">{new Date(r.pushed_at).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}</span>
-                  </div>
-                </a>
-              ) : (
-                <div className="h-[200px] animate-pulse rounded-2xl border border-line bg-panel" />
-              )}
-            </Reveal>
-          ))}
-        </div>
-      )}
+      <Head n="04" label="Public repositories · live feed" title={<>Fresh from<br /><span className="text-muted">my GitHub.</span></>} />
+      <div className="mb-6 flex flex-wrap gap-x-5 gap-y-2 font-mono text-xs text-muted">
+        {githubAccounts.map((account) => (
+          <a key={account} href={`https://github.com/${account}`} target="_blank" rel="noreferrer" className="break-all hover:text-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent">
+            @{account}{account === "revanapriyandi19" ? " · older account" : ""}
+          </a>
+        ))}
+      </div>
+      {failed ? <p role="status" className="text-sm text-muted">Repository updates are unavailable. Visit either GitHub profile above.</p>
+      : repos ? <RepositorySlider repos={repos} />
+      : <div role="status" aria-label="Loading GitHub repositories" className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 3 }, (_, i) => <div key={i} className="h-[240px] animate-pulse rounded-2xl border border-line bg-panel" />)}</div>}
     </Section>
   );
 }
@@ -533,9 +503,9 @@ export function Education() {
 /* ---------- contact ---------- */
 
 // The number is assembled on click instead of being written into the HTML, to keep it away from scrapers.
-export const openWhatsApp = (e: MouseEvent<HTMLElement>) => {
+export const openWhatsApp = (e: MouseEvent<HTMLElement>, message = "Halo Revan, saya lihat portofolio Anda dan ingin diskusi proyek.") => {
   e.preventDefault();
-  const text = encodeURIComponent("Halo Revan, saya lihat portofolio Anda dan ingin diskusi proyek.");
+  const text = encodeURIComponent(message);
   window.open(`https://wa.me/${personalData.contact.whatsapp}?text=${text}`, "_blank", "noopener");
 };
 

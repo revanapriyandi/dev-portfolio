@@ -24,6 +24,10 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 
 ## Features
 
+Konfigurasi dua akun GitHub, akses repo privat melalui Aksa, dan pengujiannya dijelaskan di [docs/github-accounts.md](docs/github-accounts.md).
+
+Panduan environment variables dan deployment: [docs/vercel-setup.md](docs/vercel-setup.md).
+
 - Built with [Next.js](https://nextjs.org)
 - Optimized fonts with [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts)
 - Easy deployment with [Vercel](https://vercel.com)

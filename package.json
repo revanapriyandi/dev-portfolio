@@ -7,7 +7,8 @@
     "dev": "next dev --webpack",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test": "node --test tests/*.test.mjs"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.9.22",
@@ -26,7 +27,8 @@
     "react-toastify": "^11.1.0",
     "server-only": "^0.0.1",
     "serwist": "^9.5.13",
-    "sharp": "^0.35.5"
+    "sharp": "^0.35.5",
+    "swiper": "^14.3.0"
   },
   "devDependencies": {
     "@builder.io/partytown": "^0.10.3",

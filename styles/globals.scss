@@ -261,18 +261,54 @@ html[data-splash="out"] .splash {
   }
 }
 
+.portfolio-swiper .swiper-slide,
+.aksa-card-swiper .swiper-slide {
+  height: auto;
+}
+
+.aksa-card-swiper .swiper-wrapper {
+  align-items: flex-start;
+}
+
+.portfolio-swiper .swiper-pagination {
+  position: relative;
+  height: 3px;
+  margin-top: 20px;
+  border-radius: 4px;
+  background: var(--line);
+}
+
+.portfolio-swiper .swiper-pagination-progressbar-fill {
+  border-radius: inherit;
+  background: rgb(var(--accent));
+}
+
 /* Aksa pointing at a section or card: a pulsing accent ring, like a selection */
 .aksa-focus {
+  position: relative;
+  isolation: isolate;
   border-radius: 1.5rem;
+}
+
+.aksa-focus::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  z-index: 40;
+  pointer-events: none;
+  border: 2px solid rgb(var(--accent));
+  border-radius: inherit;
   animation: aksa-focus 1.2s ease-out 0.4s 2 both;
 }
 
 @keyframes aksa-focus {
   0% {
-    box-shadow: 0 0 0 0 rgb(var(--accent) / 0.7), 0 0 0 2px rgb(var(--accent));
+    opacity: 1;
+    box-shadow: inset 0 0 0 1px rgb(var(--accent) / 0.3);
   }
   100% {
-    box-shadow: 0 0 0 18px rgb(var(--accent) / 0), 0 0 0 2px rgb(var(--accent) / 0.25);
+    opacity: 0.4;
+    box-shadow: inset 0 0 0 8px rgb(var(--accent) / 0);
   }
 }
 
@@ -281,9 +317,10 @@ html[data-splash="out"] .splash {
     scroll-behavior: auto;
   }
 
-  .aksa-focus {
+  .aksa-focus::after {
     animation: none;
-    box-shadow: 0 0 0 2px rgb(var(--accent));
+    opacity: 1;
+    box-shadow: none;
   }
 
   .marquee,

@@ -2,7 +2,7 @@
 
 import { AnimatePresence, animate, motion, useMotionValue, useTransform } from "framer-motion";
 import Image from "next/image";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { FiChevronLeft, FiChevronRight, FiDownload, FiX } from "react-icons/fi";
 import { personalData } from "@/utils/data/personal-data";
 
@@ -96,6 +96,13 @@ function Sheet({ front, back, wide, flipped, zIndex, onDone }: {
 }
 
 export default function ResumeBook({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const closeButton = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    window.dispatchEvent(new Event("aksa:resume-visible"));
+    const frame = requestAnimationFrame(() => closeButton.current?.focus());
+    return () => cancelAnimationFrame(frame);
+  }, [open]);
   const wide = useIsWide();
   // wide: each sheet carries two faces (front / back) like a real book; narrow: one face per sheet
   const sheets = wide
@@ -148,7 +155,7 @@ export default function ResumeBook({ open, onClose }: { open: boolean; onClose: 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[60] flex flex-col bg-ink/90 backdrop-blur-xl"
+          className="fixed inset-0 z-[80] flex flex-col bg-ink/90 backdrop-blur-xl"
         >
           <div className="flex items-center justify-between px-4 py-3 sm:px-8">
             <p className="font-mono text-xs uppercase tracking-widest text-muted">
@@ -158,7 +165,7 @@ export default function ResumeBook({ open, onClose }: { open: boolean; onClose: 
               <a href="/resume.pdf" download="M-Revan-Apriyandi-CV.pdf" className="flex h-11 items-center gap-2 rounded-full border border-line px-4 font-mono text-xs uppercase tracking-widest hover:border-accent hover:text-accent">
                 <FiDownload /> <span className="hidden sm:inline">PDF</span>
               </a>
-              <button onClick={close} aria-label="Close resume" className="flex h-11 w-11 items-center justify-center rounded-full border border-line hover:border-accent hover:text-accent">
+              <button ref={closeButton} onClick={close} aria-label="Close resume" className="flex h-11 w-11 items-center justify-center rounded-full border border-line hover:border-accent hover:text-accent">
                 <FiX />
               </button>
             </div>

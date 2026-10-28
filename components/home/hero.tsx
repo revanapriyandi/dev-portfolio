@@ -263,19 +263,58 @@ function SignalField() {
   return <canvas ref={ref} aria-hidden className="absolute inset-0 h-full w-full" />;
 }
 
-function Letters({ text, delay }: { text: string; delay: number }) {
+const GLYPHS = "!<>-_/[]{}=+*^?#01ABCDEFX";
+
+// One letter of the name: rises in, decodes from random glyphs, re-scrambles on hover,
+// and joins the periodic lime wave (.name-wave in globals.scss, staggered by --i).
+function Letter({ c, i, delay }: { c: string; i: number; delay: number }) {
+  const [ch, setCh] = useState(c);
+  const timer = useRef<ReturnType<typeof setInterval>>(undefined);
+  const reduce = useReducedMotion();
+
+  const scramble = (ms: number) => {
+    if (reduce || c === " ") return;
+    clearInterval(timer.current);
+    let t = 0;
+    timer.current = setInterval(() => {
+      t += 45;
+      if (t >= ms) {
+        clearInterval(timer.current);
+        setCh(c);
+      } else setCh(GLYPHS[Math.floor(Math.random() * GLYPHS.length)]);
+    }, 45);
+  };
+
+  useEffect(() => {
+    const start = setTimeout(() => scramble(380 + i * 30), delay * 1000);
+    return () => {
+      clearTimeout(start);
+      clearInterval(timer.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (c === " ") return <span className="inline-block">{" "}</span>;
+  return (
+    <motion.span
+      className="name-wave inline-block cursor-default hover:[--glow:1] hover:[animation:none]"
+      style={{ "--i": i } as React.CSSProperties}
+      initial={{ y: "110%" }}
+      animate={{ y: 0 }}
+      whileHover={{ y: "-0.06em" }}
+      transition={{ duration: 0.9, ease, delay: delay + i * 0.035 }}
+      onHoverStart={() => scramble(320)}
+    >
+      {ch}
+    </motion.span>
+  );
+}
+
+function Letters({ text, delay, offset = 0 }: { text: string; delay: number; offset?: number }) {
   return (
     <span className="block overflow-hidden pb-[0.08em]" aria-hidden>
       {[...text].map((c, i) => (
-        <motion.span
-          key={i}
-          className="inline-block"
-          initial={{ y: "110%" }}
-          animate={{ y: 0 }}
-          transition={{ duration: 0.9, ease, delay: delay + i * 0.035 }}
-        >
-          {c === " " ? " " : c}
-        </motion.span>
+        <Letter key={i} c={c} i={offset + i} delay={delay + i * 0.035} />
       ))}
     </span>
   );
@@ -331,7 +370,7 @@ export function Hero() {
           <span className="sr-only">{personalData.name}</span>
           <Letters text="M. Revan" delay={0.4} />
           <span className="flex items-baseline gap-4">
-            <Letters text="Apriyandi" delay={0.6} />
+            <Letters text="Apriyandi" delay={0.6} offset={8} />
             <motion.span {...fade(1.1)} className="hidden h-[0.12em] flex-1 bg-gradient-to-r from-accent to-transparent md:block" aria-hidden />
           </span>
         </h1>

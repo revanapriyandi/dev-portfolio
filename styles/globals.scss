@@ -146,6 +146,25 @@ body {
   }
 }
 
+/* lime light that runs across the hero name every few seconds */
+@property --glow {
+  syntax: "<number>";
+  initial-value: 0;
+  inherits: false;
+}
+
+.name-wave {
+  color: color-mix(in srgb, rgb(var(--accent)) calc(var(--glow) * 100%), rgb(var(--fg)));
+  text-shadow: 0 0 28px rgb(var(--accent) / calc(var(--glow) * 0.55));
+  animation: name-wave 7s ease-in-out infinite;
+  animation-delay: calc(2.2s + var(--i, 0) * 70ms);
+}
+
+@keyframes name-wave {
+  0%, 9%, 100% { --glow: 0; }
+  4% { --glow: 1; }
+}
+
 .blink {
   animation: blink 1s steps(1) infinite;
 }
@@ -162,6 +181,7 @@ body {
   }
 
   .marquee,
+  .name-wave,
   .blink {
     animation: none;
   }

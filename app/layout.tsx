@@ -6,42 +6,101 @@ import "@/styles/card.scss";
 import "@/styles/globals.scss";
 import { ReactNode } from "react";
 import { personalData } from "@/utils/data/personal-data";
-import { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/react";
 import Script from "next/script";
 
 const display = Space_Grotesk({ subsets: ["latin"], variable: "--font-display" });
 const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
 
+const title = `${personalData.name} — ${personalData.designation}`;
+const shareImage = { url: "/og.png", width: 1200, height: 630, alt: title };
+
 export const metadata: Metadata = {
-  applicationName: `Portfolio ${personalData.designation}`,
+  metadataBase: new URL(personalData.siteUrl),
+  applicationName: personalData.name,
   title: {
-    default: personalData.name,
-    template: `%s - ${personalData.designation}`,
+    default: title,
+    template: `%s · ${personalData.name}`,
   },
   description: personalData.description,
+  keywords: personalData.keywords,
+  authors: [{ name: personalData.name, url: personalData.siteUrl }],
+  creator: personalData.name,
+  publisher: personalData.name,
+  category: "technology",
+  alternates: { canonical: "/" },
   manifest: "/manifest.json",
+  openGraph: {
+    type: "profile",
+    url: "/",
+    siteName: personalData.name,
+    title,
+    description: personalData.description,
+    locale: "en_US",
+    alternateLocale: ["id_ID"],
+    firstName: "Revan",
+    lastName: "Apriyandi",
+    username: personalData.username,
+    images: [shareImage],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description: personalData.description,
+    images: [shareImage],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 },
+  },
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "48x48" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+  },
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default",
-    title: personalData.name,
+    statusBarStyle: "black-translucent",
+    title: "Revan",
   },
   formatDetection: {
     telephone: false,
   },
-  icons: {
-    shortcut: "/favicon.ico",
-    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
-  },
-  authors: [
-    {
-      url: personalData.socialLinks.github,
-      name: personalData.username,
-    },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#05070d",
+  colorScheme: "dark",
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
+
+// schema.org Person so search engines can build a knowledge panel for the name
+const personJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: personalData.name,
+  alternateName: "Revan Apriyandi",
+  url: personalData.siteUrl,
+  image: `${personalData.siteUrl}/profile-hud.webp`,
+  jobTitle: personalData.designation,
+  description: personalData.description,
+  email: `mailto:${personalData.contact.email}`,
+  address: { "@type": "PostalAddress", addressLocality: "Jakarta", addressCountry: "ID" },
+  alumniOf: { "@type": "CollegeOrUniversity", name: "Universitas Borobudur" },
+  knowsAbout: ["Laravel", "React", "Next.js", "TypeScript", "PHP", "Android", "PostgreSQL", "MySQL", "Redis"],
+  sameAs: [
+    personalData.socialLinks.github,
+    personalData.socialLinks.linkedIn,
+    personalData.socialLinks.fastwork,
+    personalData.socialLinks.stackOverflow,
+    personalData.socialLinks.instagram,
   ],
-  keywords: personalData.keywords,
-  creator: personalData.username,
-  robots: "index, follow"
 };
 
 interface RootLayoutProps {
@@ -57,6 +116,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
       <head>
         {/* apply a saved light-theme choice before first paint; dark is the default */}
         <script dangerouslySetInnerHTML={{ __html: `try{if(localStorage.getItem("theme")==="light")document.documentElement.dataset.theme="light"}catch(e){}` }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }} />
       </head>
 
       <body className={`${display.variable} ${mono.variable} font-sans`}>

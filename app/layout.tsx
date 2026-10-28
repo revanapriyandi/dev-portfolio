@@ -114,8 +114,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" dir="ltr" suppressHydrationWarning>
       <head>
-        {/* apply a saved light-theme choice before first paint; dark is the default */}
-        <script dangerouslySetInnerHTML={{ __html: `try{if(localStorage.getItem("theme")==="light")document.documentElement.dataset.theme="light"}catch(e){}` }} />
+        {/* before first paint: apply a saved light-theme choice (dark is the default) and flag the first-visit splash */}
+        <script dangerouslySetInnerHTML={{ __html: `try{var d=document.documentElement;if(localStorage.getItem("theme")==="light")d.dataset.theme="light";if(!sessionStorage.getItem("splash")&&!matchMedia("(prefers-reduced-motion: reduce)").matches)d.dataset.splash="1"}catch(e){}` }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }} />
       </head>
 

@@ -332,7 +332,12 @@ function useJakartaTime() {
   return now;
 }
 
+// seconds the hero entrance waits while the first-visit splash plays (splash.tsx DURATION + exit)
+const SPLASH_OFFSET = 2.1;
+const splashBase = () => (typeof document !== "undefined" && document.documentElement.dataset.splash === "1" ? SPLASH_OFFSET : 0);
+
 export function Hero() {
+  const [base] = useState(splashBase);
   const [role, setRole] = useState(0);
   const time = useJakartaTime();
   useEffect(() => {
@@ -343,7 +348,7 @@ export function Hero() {
   const fade = (delay: number) => ({
     initial: { opacity: 0, y: 16 },
     animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.8, ease, delay },
+    transition: { duration: 0.8, ease, delay: base + delay },
   });
 
   return (
@@ -368,9 +373,9 @@ export function Hero() {
 
         <h1 className="text-[clamp(3.4rem,15vw,10rem)] font-bold leading-[0.88] tracking-[-0.04em]">
           <span className="sr-only">{personalData.name}</span>
-          <Letters text="M. Revan" delay={0.4} />
+          <Letters text="M. Revan" delay={base + 0.4} />
           <span className="flex items-baseline gap-4">
-            <Letters text="Apriyandi" delay={0.6} offset={8} />
+            <Letters text="Apriyandi" delay={base + 0.6} offset={8} />
             <motion.span {...fade(1.1)} className="hidden h-[0.12em] flex-1 bg-gradient-to-r from-accent to-transparent md:block" aria-hidden />
           </span>
         </h1>

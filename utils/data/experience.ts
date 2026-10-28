@@ -1,10 +1,12 @@
 export const experiences = [
   {
     id: 1,
-    title: "Fullstack Developer",
-    company: "Freelance",
-    duration: "(Feb 2022 - Present)",
+    title: "Full-Stack Web & Android Developer",
+    company: "Freelance · Fastwork",
+    duration: "(2022 - Present)",
     description: [
+      "Menyelesaikan 62 order di Fastwork dengan rating 5.0, dan 22 klien kembali order ulang.",
+      "Membangun sistem ERP, SaaS, POS, dan aplikasi Android untuk perusahaan, UMKM, dan yayasan.",
       "Berkomunikasi langsung dengan klien untuk memahami kebutuhan bisnis dan menerjemahkannya menjadi solusi berbasis web.",
       "Membangun website yang responsif dan ramah pengguna dengan teknologi terbaru seperti Laravel, React, dan TailwindCSS.",
       "Melakukan debugging dan optimisasi performa website untuk memastikan kecepatan dan stabilitas maksimal.",

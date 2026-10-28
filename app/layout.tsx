@@ -1,5 +1,5 @@
 import { GoogleAnalytics, GoogleTagManager } from "@next/third-parties/google";
-import { Inter } from "next/font/google";
+import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "@/styles/card.scss";
@@ -10,7 +10,8 @@ import { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/react";
 import Script from "next/script";
 
-const inter = Inter({ subsets: ["latin"] });
+const display = Space_Grotesk({ subsets: ["latin"], variable: "--font-display" });
+const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
 
 export const metadata: Metadata = {
   applicationName: `Portfolio ${personalData.designation}`,
@@ -52,10 +53,14 @@ export default function RootLayout({ children }: RootLayoutProps) {
   const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "";
 
   return (
-    <html lang="en" dir="ltr">
+    <html lang="en" dir="ltr" suppressHydrationWarning>
+      <head>
+        {/* apply a saved light-theme choice before first paint; dark is the default */}
+        <script dangerouslySetInnerHTML={{ __html: `try{if(localStorage.getItem("theme")==="light")document.documentElement.dataset.theme="light"}catch(e){}` }} />
+      </head>
 
-      <body className={inter.className}>
-        <ToastContainer />
+      <body className={`${display.variable} ${mono.variable} font-sans`}>
+        <ToastContainer theme="dark" />
         {children}
         {gtmId && <GoogleTagManager gtmId={gtmId} />}
         {gaId && <GoogleAnalytics gaId={gaId} />}

@@ -2,8 +2,8 @@ export const personalData = {
   name: "M. Revan Apriyandi",
   username: "revanapriyandi",
   profile: "/profile.png",
-  designation: "Software Engineer",
-  description: "I am a Software Engineer with over 3 years of experience in creating various types of websites, from business sites to interactive web applications. My expertise includes PHP, CSS, and various frameworks and libraries such as Tailwind, Bootstrap, Laravel, React, and others. I am considered to be able to work well in teams and individually, and can complete work within specified deadlines.",
+  designation: "Full-Stack Web & Android Developer",
+  description: "Full-stack web & Android developer based in Jakarta. 62 freelance orders delivered with a 5.0 rating and 22 repeat clients. I build custom web apps, ERP and SaaS platforms, and Android apps with Laravel, React, Next.js and PostgreSQL.",
   contact: {
     email: "revanapriyandi88@gmail.com",
     phone: "+62 812-6186-5875",
@@ -12,11 +12,11 @@ export const personalData = {
   socialLinks: {
     github: "https://github.com/revanapriyandi",
     instagram: "https://instagram.com/revan_apriyandi",
-    fastwork: "https://fastwork.id/user/revan_",
+    fastwork: "https://fastwork.com/user/revanapriyandi",
     linkedIn: "https://linkedin.com/in/revan-apriyandi",
     stackOverflow: "https://stackoverflow.com/users/21032071/m-revan-apriyandi",
   },
-  resume: "https://drive.google.com/file/d/1FTN5gqOF-hgKDJisCLIZ4y6arTr5w4gD/view?usp=sharing",
+  resume: "/resume.pdf",
   keywords: [
     "Next.js Developer",
     "React.js Developer",

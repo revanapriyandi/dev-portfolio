@@ -143,8 +143,9 @@ export function About() {
   return (
     <Section id="about">
       <Head n="01" label="About" title={<>I build the software<br /><span className="text-muted">your business runs on.</span></>} />
-      <div className="grid gap-12 lg:grid-cols-[1.3fr_1fr] lg:gap-16">
-        <div>
+      {/* phone: text, photo, terminal stacked · tablet: text, then photo | terminal · desktop: text + terminal | sticky photo */}
+      <div className="grid items-start gap-x-6 gap-y-10 sm:grid-cols-[0.8fr_1.2fr] lg:grid-cols-[1.25fr_1fr] lg:gap-x-16 lg:gap-y-12">
+        <div className="sm:col-span-2 lg:col-span-1 lg:col-start-1 lg:row-start-1">
           <p ref={ref} className="text-2xl font-medium leading-snug tracking-tight sm:text-3xl">
             {words.map((w, i) => (
               <Word key={i} word={w} progress={scrollYProgress} range={[i / words.length, (i + 1) / words.length]} />
@@ -167,8 +168,11 @@ export function About() {
           </a>
         </div>
 
-        <Reveal delay={0.15} className="grid items-start gap-6 sm:grid-cols-[0.8fr_1.2fr] lg:grid-cols-1">
+        <Reveal delay={0.15} className="sm:row-start-2 lg:sticky lg:top-24 lg:col-start-2 lg:row-span-2 lg:row-start-1">
           <Portrait />
+        </Reveal>
+
+        <Reveal delay={0.2} className="sm:col-start-2 sm:row-start-2 lg:col-start-1">
           <div className="w-full overflow-hidden force-dark rounded-2xl border border-line bg-panel shadow-[0_0_80px_-20px_rgb(var(--accent)/0.25)]">
             <div className="flex items-center gap-2 border-b border-line px-4 py-3">
               {["#ff5f57", "#febc2e", "#28c840"].map((c) => <span key={c} className="h-3 w-3 rounded-full" style={{ background: c }} />)}
@@ -351,13 +355,22 @@ function Gallery({ project, onOpen }: { project: Project; onOpen: (i: number) =>
   );
 }
 
+const INITIAL_PROJECTS = 4;
+
 export function Projects() {
   const [open, setOpen] = useState<{ p: Project; i: number } | null>(null);
+  const [all, setAll] = useState(false);
+  const shown = all ? projectsData : projectsData.slice(0, INITIAL_PROJECTS);
+  const more = projectsData.length - INITIAL_PROJECTS;
+  const toggle = () => {
+    if (all) document.getElementById("projects")?.scrollIntoView({ behavior: "smooth" });
+    setAll(!all);
+  };
   return (
     <Section id="projects">
       <Head n="03" label="Selected work" title={<>Things I&apos;ve<br /><span className="text-muted">designed &amp; built.</span></>} />
       <div className="grid gap-px overflow-hidden rounded-2xl border border-line bg-line shadow-card md:grid-cols-2">
-        {projectsData.map((p, i) => {
+        {shown.map((p, i) => {
           const href = p.demo || p.code;
           return (
             <motion.article
@@ -392,6 +405,18 @@ export function Projects() {
           );
         })}
       </div>
+      {more > 0 && (
+        <div className="mt-8 flex justify-center">
+          <button
+            onClick={toggle}
+            aria-expanded={all}
+            className="group inline-flex min-h-11 items-center gap-3 rounded-full border border-line bg-panel px-6 py-3 font-mono text-xs uppercase tracking-widest transition-colors hover:border-accent hover:text-accent"
+          >
+            {all ? "Show less" : `Show ${more} more projects`}
+            <FiChevronRight className={`transition-transform ${all ? "-rotate-90" : "rotate-90 group-hover:translate-y-0.5"}`} />
+          </button>
+        </div>
+      )}
       <AnimatePresence>{open && <Lightbox project={open.p} start={open.i} onClose={() => setOpen(null)} />}</AnimatePresence>
     </Section>
   );

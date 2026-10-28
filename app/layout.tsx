@@ -2,7 +2,6 @@ import { GoogleAnalytics, GoogleTagManager } from "@next/third-parties/google";
 import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import "@/styles/card.scss";
 import "@/styles/globals.scss";
 import { ReactNode } from "react";
 import { personalData } from "@/utils/data/personal-data";

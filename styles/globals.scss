@@ -212,6 +212,45 @@ html[data-splash="out"] .splash {
   }
 }
 
+/* ---------- status pages (404 / error / offline): occasional RGB-split glitch ---------- */
+.glitch {
+  position: relative;
+  text-shadow: 0 0 40px rgb(var(--accent) / 0.25);
+
+  &::before,
+  &::after {
+    content: attr(data-text);
+    position: absolute;
+    inset: 0;
+    background: inherit;
+    -webkit-background-clip: text;
+    background-clip: text;
+    opacity: 0;
+  }
+
+  &::before {
+    color: rgb(var(--accent) / 0.7);
+    animation: glitch-a 4.5s steps(1) infinite;
+  }
+
+  &::after {
+    color: rgb(var(--cyan) / 0.7);
+    animation: glitch-b 4.5s steps(1) infinite;
+  }
+}
+
+@keyframes glitch-a {
+  0%, 88%, 100% { opacity: 0; transform: none; clip-path: none; }
+  90% { opacity: 1; transform: translate(-4px, 1px); clip-path: inset(10% 0 55% 0); }
+  94% { opacity: 1; transform: translate(3px, -2px); clip-path: inset(60% 0 8% 0); }
+}
+
+@keyframes glitch-b {
+  0%, 89%, 100% { opacity: 0; transform: none; clip-path: none; }
+  91% { opacity: 1; transform: translate(4px, -1px); clip-path: inset(40% 0 30% 0); }
+  95% { opacity: 1; transform: translate(-3px, 2px); clip-path: inset(5% 0 70% 0); }
+}
+
 .blink {
   animation: blink 1s steps(1) infinite;
 }
@@ -229,6 +268,8 @@ html[data-splash="out"] .splash {
 
   .marquee,
   .name-wave,
+  .glitch::before,
+  .glitch::after,
   .qr-scan,
   .blink {
     animation: none;

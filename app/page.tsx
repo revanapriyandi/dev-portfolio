@@ -3,6 +3,8 @@
 import { MotionConfig } from "framer-motion";
 import { Hero, Nav } from "@/components/home/hero";
 import Splash from "@/components/home/splash";
+import Assistant from "@/components/home/assistant";
+import Track from "@/components/home/track";
 import { About, Contact, Education, Experience, Footer, Projects, QuickConnect, Repos, Ticker } from "@/components/home/sections";
 
 export default function Home() {
@@ -22,6 +24,8 @@ export default function Home() {
         <QuickConnect />
       </main>
       <Footer />
+      <Assistant />
+      <Track />
     </MotionConfig>
   );
 }

@@ -9,6 +9,7 @@ interface UserInput {
   name: string;
   email: string;
   message: string;
+  website: string; // honeypot, stays empty for humans
 }
 
 const field =
@@ -18,7 +19,7 @@ const ContactForm: React.FC = () => {
   const [emailError, setEmailError] = useState(false);
   const [requiredError, setRequiredError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [userInput, setUserInput] = useState<UserInput>({ name: "", email: "", message: "" });
+  const [userInput, setUserInput] = useState<UserInput>({ name: "", email: "", message: "", website: "" });
 
   const handleSendMail = async (e: FormEvent) => {
     e.preventDefault();
@@ -37,7 +38,7 @@ const ContactForm: React.FC = () => {
       const res = await axios.post("/api/contact", userInput);
       if (res.status !== 200) throw new Error("Failed to send message!");
       toast.success("Message sent successfully!");
-      setUserInput({ name: "", email: "", message: "" });
+      setUserInput({ name: "", email: "", message: "", website: "" });
     } catch {
       toast.error("Failed to send message!");
     } finally {
@@ -51,6 +52,8 @@ const ContactForm: React.FC = () => {
 
   return (
     <form onSubmit={handleSendMail} noValidate className="flex flex-col gap-4">
+      {/* honeypot: hidden from people and screen readers; bots that fill it are dropped server-side */}
+      <input type="text" name="website" value={userInput.website} onChange={handleInputChange} tabIndex={-1} autoComplete="off" aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 opacity-0" />
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="flex flex-col gap-2">
           <span className="font-mono text-xs uppercase tracking-widest text-muted">Name</span>
@@ -75,7 +78,7 @@ const ContactForm: React.FC = () => {
       </div>
       <label className="flex flex-col gap-2">
         <span className="font-mono text-xs uppercase tracking-widest text-muted">Message</span>
-        <textarea className={field} maxLength={500} name="message" required rows={6} value={userInput.message} onChange={handleInputChange} />
+        <textarea className={field} maxLength={2000} name="message" required rows={6} value={userInput.message} onChange={handleInputChange} />
       </label>
       {requiredError && <p className="text-sm text-red-400">All fields are required.</p>}
       <button

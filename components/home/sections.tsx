@@ -526,7 +526,7 @@ export function Education() {
 /* ---------- contact ---------- */
 
 // The number is assembled on click instead of being written into the HTML, to keep it away from scrapers.
-const openWhatsApp = (e: MouseEvent<HTMLElement>) => {
+export const openWhatsApp = (e: MouseEvent<HTMLElement>) => {
   e.preventDefault();
   const text = encodeURIComponent("Halo Revan, saya lihat portofolio Anda dan ingin diskusi proyek.");
   window.open(`https://wa.me/${personalData.contact.whatsapp}?text=${text}`, "_blank", "noopener");

@@ -1,10 +1,10 @@
 "use client";
 
-import { animate, motion, useInView, useScroll, useTransform, type MotionValue } from "framer-motion";
+import { AnimatePresence, animate, motion, useInView, useScroll, useTransform, type MotionValue } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
 import { FaGithub, FaLinkedinIn, FaStackOverflow, FaInstagram, FaStar } from "react-icons/fa";
-import { FiArrowUpRight, FiCopy, FiCheck } from "react-icons/fi";
+import { FiArrowUpRight, FiCheck, FiChevronLeft, FiChevronRight, FiCopy, FiX } from "react-icons/fi";
 import { personalData } from "@/utils/data/personal-data";
 import { experiences } from "@/utils/data/experience";
 import { certifications, educations } from "@/utils/data/educations";
@@ -244,7 +244,115 @@ const spot = (e: MouseEvent<HTMLElement>) => {
   e.currentTarget.style.setProperty("--y", `${e.clientY - r.top}px`);
 };
 
+type Project = (typeof projectsData)[number];
+
+// Full-screen viewer for a project's display images (arrow keys / swipe / Esc).
+function Lightbox({ project, start, onClose }: { project: Project; start: number; onClose: () => void }) {
+  const [i, setI] = useState(start);
+  const n = project.images.length;
+  const go = (d: number) => setI((v) => (v + d + n) % n);
+
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowRight") setI((v) => (v + 1) % n);
+      if (e.key === "ArrowLeft") setI((v) => (v - 1 + n) % n);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [n, onClose]);
+
+  return (
+    <motion.div
+      role="dialog"
+      aria-modal="true"
+      aria-label={project.name}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+      className="fixed inset-0 z-[70] flex flex-col bg-ink/95 backdrop-blur-xl"
+    >
+      <div className="flex items-center justify-between px-4 py-3 sm:px-8" onClick={(e) => e.stopPropagation()}>
+        <p className="font-mono text-xs uppercase tracking-widest text-muted">
+          <span className="text-accent">{project.name}</span> · {i + 1} / {n}
+        </p>
+        <button onClick={onClose} aria-label="Close gallery" className="flex h-11 w-11 items-center justify-center rounded-full border border-line hover:border-accent hover:text-accent">
+          <FiX />
+        </button>
+      </div>
+      <div className="relative flex flex-1 items-center justify-center px-4 pb-6 sm:px-16">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.97 }}
+            transition={{ duration: 0.3, ease }}
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            onDragEnd={(_, info) => Math.abs(info.offset.x) > 60 && go(info.offset.x < 0 ? 1 : -1)}
+            onClick={(e) => e.stopPropagation()}
+            className="relative aspect-[16/10] w-full max-w-6xl overflow-hidden rounded-xl border border-line"
+          >
+            <Image src={project.images[i]} alt={`${project.name} — screen ${i + 1}`} fill sizes="90vw" className="object-cover" priority />
+          </motion.div>
+        </AnimatePresence>
+        {n > 1 && (
+          <>
+            <button onClick={(e) => { e.stopPropagation(); go(-1); }} aria-label="Previous image" className="absolute left-2 hidden h-12 w-12 items-center justify-center rounded-full border border-line bg-ink/60 hover:border-accent hover:text-accent sm:left-4 sm:flex">
+              <FiChevronLeft size={20} />
+            </button>
+            <button onClick={(e) => { e.stopPropagation(); go(1); }} aria-label="Next image" className="absolute right-2 hidden h-12 w-12 items-center justify-center rounded-full border border-line bg-ink/60 hover:border-accent hover:text-accent sm:right-4 sm:flex">
+              <FiChevronRight size={20} />
+            </button>
+          </>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
+// Card gallery: shows image 1, crossfades to image 2 on hover, dots to pick, click to open the lightbox.
+function Gallery({ project, onOpen }: { project: Project; onOpen: (i: number) => void }) {
+  const [i, setI] = useState(0);
+  return (
+    <div
+      className="relative -mx-6 -mt-6 mb-8 aspect-[16/10] overflow-hidden border-b border-line sm:-mx-10 sm:-mt-10"
+      onMouseEnter={() => project.images.length > 1 && setI(1)}
+      onMouseLeave={() => setI(0)}
+    >
+      {project.images.map((src, k) => (
+        <Image
+          key={src}
+          src={src}
+          alt={`${project.name} — screen ${k + 1}`}
+          fill
+          sizes="(min-width: 768px) 50vw, 100vw"
+          className={`object-cover transition-all duration-700 ease-out group-hover:scale-[1.02] ${k === i ? "opacity-100" : "opacity-0"}`}
+        />
+      ))}
+      <button onClick={() => onOpen(i)} aria-label={`Open ${project.name} gallery`} className="absolute inset-0 z-10" />
+      <div className="absolute bottom-3 right-3 z-20 flex items-center gap-1.5 rounded-full bg-ink/70 px-2.5 py-1.5 backdrop-blur">
+        {project.images.map((src, k) => (
+          <button
+            key={src}
+            onClick={() => setI(k)}
+            aria-label={`Show screen ${k + 1}`}
+            className={`h-1.5 rounded-full transition-all ${k === i ? "w-5 bg-accent" : "w-1.5 bg-fg/40"}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function Projects() {
+  const [open, setOpen] = useState<{ p: Project; i: number } | null>(null);
   return (
     <Section id="projects">
       <Head n="03" label="Selected work" title={<>Things I&apos;ve<br /><span className="text-muted">designed &amp; built.</span></>} />
@@ -257,15 +365,16 @@ export function Projects() {
               onMouseMove={spot}
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
-              viewport={{ once: true, amount: 0.3 }}
+              viewport={{ once: true, amount: 0.2 }}
               transition={{ duration: 0.8, delay: (i % 2) * 0.1 }}
               className="spotlight group flex flex-col bg-ink p-6 sm:p-10"
             >
+              {p.images.length > 0 && <Gallery project={p} onOpen={(k) => setOpen({ p, i: k })} />}
               <div className="flex items-start justify-between gap-4">
                 <span className="font-mono text-xs text-muted">P/{String(i + 1).padStart(2, "0")}{p.year && ` · ${p.year}`}</span>
-                <span className="font-mono text-[11px] uppercase tracking-widest text-cyan">{p.role}</span>
+                <span className="font-mono text-[11px] uppercase tracking-widest text-cyan">{p.category}</span>
               </div>
-              <h3 className="mt-8 text-2xl font-semibold leading-tight tracking-tight transition-colors group-hover:text-accent sm:text-[1.75rem]">
+              <h3 className="mt-5 text-2xl font-semibold leading-tight tracking-tight transition-colors group-hover:text-accent sm:text-[1.75rem]">
                 {p.name}
               </h3>
               <p className="mt-4 flex-1 leading-relaxed text-muted">{p.description}</p>
@@ -276,13 +385,14 @@ export function Projects() {
               </div>
               {href && (
                 <a href={href} target="_blank" rel="noreferrer" className="mt-4 inline-flex min-h-11 items-center gap-1 self-start font-mono text-xs uppercase tracking-widest hover:text-accent">
-                  {p.demo ? "Live demo" : "Source"} <FiArrowUpRight />
+                  {p.demo ? "Live demo" : "Source on GitHub"} <FiArrowUpRight />
                 </a>
               )}
             </motion.article>
           );
         })}
       </div>
+      <AnimatePresence>{open && <Lightbox project={open.p} start={open.i} onClose={() => setOpen(null)} />}</AnimatePresence>
     </Section>
   );
 }

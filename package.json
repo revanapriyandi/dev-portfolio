@@ -19,6 +19,7 @@
     "axios": "^1.21.0",
     "framer-motion": "^14.7.1",
     "groq-sdk": "^1.6.0",
+    "js-tiktoken": "^1.0.21",
     "next": "^16.4.3",
     "nodemailer": "^10.2.1",
     "react": "^19.3.1",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { FaGithub, FaStar } from "react-icons/fa";
 import { FiArrowUpRight, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import { githubAccounts } from "@/utils/data/github-accounts";
@@ -8,29 +8,37 @@ import type { RepoCard } from "@/utils/github";
 import Swiper from "swiper";
 import { A11y, Pagination } from "swiper/modules";
 
+const subscribePageSize = (notify: () => void) => {
+  const queries = [window.matchMedia("(min-width: 640px)"), window.matchMedia("(min-width: 1024px)")];
+  queries.forEach((query) => query.addEventListener("change", notify));
+  return () => queries.forEach((query) => query.removeEventListener("change", notify));
+};
+const getPageSize = () => window.matchMedia("(min-width: 1024px)").matches ? 6 : window.matchMedia("(min-width: 640px)").matches ? 4 : 2;
+
 export default function RepositorySlider({ repos }: { repos: RepoCard[] }) {
   const [account, setAccount] = useState<string>("all");
-  const [edges, setEdges] = useState({ start: true, end: false });
+  const [edges, setEdges] = useState({ start: true, end: false, page: 1 });
+  const pageSize = useSyncExternalStore(subscribePageSize, getPageSize, () => 6);
   const track = useRef<HTMLDivElement>(null);
   const progress = useRef<HTMLDivElement>(null);
   const swiper = useRef<Swiper | null>(null);
   const visible = useMemo(() => repos.filter((r) => account === "all" || r.fullName.split("/")[0].toLowerCase() === account), [repos, account]);
+  const pages = useMemo(() => Array.from({ length: Math.ceil(visible.length / pageSize) }, (_, i) => visible.slice(i * pageSize, (i + 1) * pageSize)), [visible, pageSize]);
 
   useEffect(() => {
     const el = track.current;
     if (!el) return;
-    const sync = (instance: Swiper) => setEdges({ start: instance.isBeginning, end: instance.isEnd });
+    const sync = (instance: Swiper) => setEdges({ start: instance.isBeginning, end: instance.isEnd, page: instance.activeIndex + 1 });
     const instance = new Swiper(el, {
-      modules: [A11y, Pagination], spaceBetween: 16, slidesPerView: 1.08,
-      breakpoints: { 640: { slidesPerView: 2 }, 1024: { slidesPerView: 3 } },
+      modules: [A11y, Pagination], spaceBetween: 16, slidesPerView: 1,
       grabCursor: true, watchOverflow: true, speed: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 450,
       pagination: { el: progress.current, type: "progressbar" },
-      a11y: { containerMessage: "GitHub repositories", itemRoleDescriptionMessage: "repository", slideRole: "listitem" },
+      a11y: { containerMessage: "GitHub repositories", itemRoleDescriptionMessage: "repository page", slideRole: "listitem" },
       on: { init: sync, slideChange: sync, resize: sync, lock: sync, unlock: sync },
     });
     swiper.current = instance;
     return () => { instance.destroy(true, true); swiper.current = null; };
-  }, [account, repos]);
+  }, [account, repos, pageSize]);
 
   const slide = (direction: number) => {
     const speed = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 450;
@@ -60,7 +68,7 @@ export default function RepositorySlider({ repos }: { repos: RepoCard[] }) {
           <button aria-label="Next repositories" aria-controls="github-repository-track" disabled={edges.end || !visible.length} onClick={() => slide(1)} className={control}><FiChevronRight size={18} /></button>
         </div>
       </div>
-      <p role="status" className="mb-3 text-xs text-muted">{visible.length} public repositories · swipe or use the arrows to browse</p>
+      <p role="status" className="mb-3 text-xs text-muted">{visible.length} public repositories · {pageSize} per page · {pages.length ? edges.page : 0} / {pages.length} · swipe or use the arrows to browse</p>
       {!visible.length && <p className="py-8 text-sm text-muted">No public repositories available for this account.</p>}
       <div
         ref={track}
@@ -71,24 +79,30 @@ export default function RepositorySlider({ repos }: { repos: RepoCard[] }) {
         className="swiper portfolio-swiper rounded-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
       >
         <ul className="swiper-wrapper">
-        {visible.map((r) => (
-          <li key={r.fullName} className="swiper-slide min-w-0">
-            <a href={r.url!} target="_blank" rel="noreferrer" className="group flex h-full min-h-[240px] w-full min-w-0 flex-col rounded-2xl border border-line bg-panel p-6 transition-colors hover:border-accent/40 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent">
-              <div className="flex items-center justify-between">
-                <FaGithub className="text-muted" />
-                <FiArrowUpRight className="text-muted transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent" />
-              </div>
-              <h3 className="mt-5 break-words font-mono text-lg font-medium">{r.name}</h3>
-              <p className="mt-1 font-mono text-xs text-muted">{r.fullName.split("/")[0]}</p>
-              <p className="mt-3 line-clamp-3 flex-1 text-sm leading-relaxed text-muted">{r.description || "No description provided on GitHub."}</p>
-              <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 font-mono text-xs text-muted">
-                {r.language && <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-cyan" />{r.language}</span>}
-                <span className="flex items-center gap-1"><FaStar /> {r.stars}</span>
-                <span className="ml-auto">{new Date(r.pushed).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}</span>
-              </div>
-            </a>
-          </li>
-        ))}
+          {pages.map((page, index) => (
+            <li key={`${account}-${pageSize}-${index}`} className="swiper-slide min-w-0">
+              <ul className="grid h-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {page.map((r) => (
+                  <li key={r.fullName} className="min-w-0">
+                    <a href={r.url!} target="_blank" rel="noreferrer" className="group flex h-full min-h-[240px] w-full min-w-0 flex-col rounded-2xl border border-line bg-panel p-6 transition-colors hover:border-accent/40 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent">
+                      <div className="flex items-center justify-between">
+                        <FaGithub className="text-muted" />
+                        <FiArrowUpRight className="text-muted transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent" />
+                      </div>
+                      <h3 className="mt-5 break-words font-mono text-lg font-medium">{r.name}</h3>
+                      <p className="mt-1 font-mono text-xs text-muted">{r.fullName.split("/")[0]}</p>
+                      <p className="mt-3 line-clamp-3 flex-1 text-sm leading-relaxed text-muted">{r.description || "No description provided on GitHub."}</p>
+                      <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 font-mono text-xs text-muted">
+                        {r.language && <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-cyan" />{r.language}</span>}
+                        <span className="flex items-center gap-1"><FaStar /> {r.stars}</span>
+                        <span className="ml-auto">{new Date(r.pushed).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}</span>
+                      </div>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ))}
         </ul>
         <div ref={progress} className="swiper-pagination" />
       </div>

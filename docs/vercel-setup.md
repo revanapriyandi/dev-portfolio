@@ -15,6 +15,8 @@ Untuk project yang sudah terhubung ke `revanapriyandi/dev-portfolio`, pertahanka
 
 Project menggunakan API server dan streaming, sehingga tidak memakai static export. Swiper terpasang lewat `package-lock.json`; tidak perlu layanan atau pengaturan Swiper terpisah.
 
+Perhitungan token berjalan di server memakai js-tiktoken dengan encoding o200k_base yang sesuai merge ranks GPT-OSS. Tidak ada environment tambahan untuk batas prompt: input dibatasi 4.500 token dan jawaban maksimal 700 token. Katalog privat yang besar tidak lagi dimasukkan seluruhnya ke prompt. Jika kuota TPM organisasi sedang terpakai, endpoint mengembalikan 429 dan waktu tunggu, termasuk ketika Groq mengirim error batas token dengan status upstream 413.
+
 ## Environment variables untuk fitur baru
 
 Isi melalui Vercel Project → Settings → Environment Variables. Pilih Production; tambahkan juga Preview jika ingin menguji fitur pada deployment preview. Nilai di bawah merupakan nama dan fungsi variabel, bukan credential.

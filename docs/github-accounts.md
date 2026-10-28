@@ -20,6 +20,10 @@ Akun yang disetujui: `revanapriyandi` dan `revanapriyandi19`.
 
 Slider feed dan chat memakai Swiper 14.3.0, mendukung drag/swipe, tombol navigasi, keyboard, dan pengurangan animasi sesuai preferensi sistem. Feed memakai progress bar; chat memakai indikator posisi kartu.
 
+Satu halaman feed memuat enam kartu pada desktop (3 kolom × 2 baris), empat pada tablet (2 × 2), dan dua pada ponsel (1 × 2). Tombol/swipe berpindah satu kelompok kartu sekaligus; filter akun kembali ke halaman pertama.
+
+Prompt Aksa memakai pilihan maksimal 12 repo yang relevan, bukan seluruh katalog. Deskripsi dibatasi 240 karakter, riwayat maksimal enam pesan tanpa tag kartu lama, lalu ukuran input dihitung dengan tokenizer o200k_base dan cadangan framing. Batas input 4.500 token ditambah output maksimal 700 token memberi ruang di bawah limit 8.000 TPM untuk satu permintaan. Riwayat lama dan repo berperingkat rendah dikurangi jika perlu. Batas TPM tetap berlaku untuk gabungan permintaan satu organisasi; error `rate_limit_exceeded`, termasuk respons upstream 413, dipetakan ke HTTP 429 dengan `Retry-After`.
+
 Kartu proyek dalam chat memakai gambar penuh di atas dengan rasio 16:10 dan `object-contain`, lalu judul dan ringkasan di bawah. Tinggi Swiper mengikuti slide aktif supaya thumbnail tidak tenggelam dalam ruang kosong.
 
 Mengikuti portofolio pengembang yang sudah disetujui: ENERGY 2 / RHYTHM 2 / MOTION 2. Kartu memakai warna, font, dan bentuk yang sudah ada. Identitas lengkap membedakan dua repo bernama sama; label Private menjelaskan mengapa kartu tidak memiliki tautan. Efek scroll/highlight tetap berfungsi sebagai penunjuk bagian yang dijelaskan Aksa.
@@ -39,7 +43,7 @@ Dokumentasi API: https://docs.github.com/en/rest/repos/repos
 - `npm test`: 19 pengujian lulus, termasuk dua akun, pagination, fallback token, akses kartu privat bertanda tangan, pemisahan identitas repo, tambahan kartu bukti di stream, penolakan klaim status proyek, rendering teks aman, dan ringkasan kontak.
 - `npm run lint`, `npx tsc --noEmit`, `npm run build`, dan `git diff --check`: lulus pada sumber akhir. TypeScript dijalankan setelah build agar tidak berbenturan dengan regenerasi `.next/types`.
 - GitHub langsung: 48 repo publik non-fork/non-arsip, terdiri atas 11 milik `revanapriyandi` dan 37 milik `revanapriyandi19`. Commit terakhir diverifikasi untuk `dev-portfolio` dan `Simperu`; tanggal commit tidak dipakai sebagai status aktif/selesai.
-- Browser pada lebar 1036 dan 390 piksel: filter akun lama memuat 37 slide; tombol, drag mouse, dan keyboard Swiper berpindah slide. Tidak ditemukan overflow horizontal. Gambar proyek selesai dimuat, sekitar 303×189 piksel di desktop dan 267×166 piksel di ponsel, memakai `object-contain`.
+- Browser pada lebar 1036 dan 390 piksel: filter akun lama memuat 37 repo; tombol, drag mouse, dan keyboard Swiper berpindah slide. Tidak ditemukan overflow horizontal. Gambar proyek selesai dimuat, sekitar 303×189 piksel di desktop dan 267×166 piksel di ponsel, memakai `object-contain`.
 - Rendering tebal dan daftar, tautan commit nyata pada kartu repo publik, garis highlight di atas galeri, modal resume z-index 80 yang menutup chat dan memfokuskan tombol tutup, serta tema terang/gelap diperiksa di browser.
 - Draf WhatsApp dicegat dalam browser pengujian untuk memeriksa ringkasan tanpa mengirim pesan; email memuat ringkasan yang sama. Respons contoh dipakai untuk memeriksa UI kartu dan sudah dilepas setelah pengujian. Pertanyaan status proyek diuji ke endpoint nyata tanpa provider LLM.
 - Pada saat verifikasi, belum ada token GitHub maupun Groq di environment lokal. Akses langsung repo privat dan keluaran Groq nyata belum diverifikasi; kasus privat/provider pada pengujian otomatis memakai fixture. Verifikasi ini dilakukan sebelum rilis sumber; status deployment produksi harus diperiksa terpisah. Panduan konfigurasi tersedia di [vercel-setup.md](vercel-setup.md).
@@ -51,3 +55,10 @@ Gate tampilan untuk perubahan ini:
 - Purpose gate PASS: gambar penuh memperlihatkan proyek; identitas pemilik membedakan repo; label privat menjelaskan absennya tautan; progress dan penghitung menunjukkan posisi.
 - Liveliness PASS: ENERGY 2 / RHYTHM 2 / MOTION 2 mengikuti arahan lama, dengan perpindahan Swiper yang dipicu pengunjung dan dukungan reduced motion.
 - Craft PASS: build, TypeScript, lint, dan 19 tes lulus; navigasi slider, tema, handoff, dan modal diperiksa pada browser.
+
+## Verifikasi lanjutan: halaman berisi enam repo dan batas token
+
+- Desktop 1440 piksel: enam kartu dalam slide aktif, tiga posisi kolom dan dua posisi baris; tombol berikutnya memperlihatkan enam repo berbeda. Filter akun lama menampilkan 37 repo dalam tujuh halaman. Tidak ada overflow horizontal pada pemeriksaan desktop.
+- Regresi katalog besar: 181 repo privat dan riwayat panjang semula menghasilkan payload uji 38.976 token. Perbaikan membatasi input sampai 4.500 token dan mempertahankan repo absensi yang relevan. Sampel terpisah dengan katalog yang sama menghasilkan 3.852 token input, 4.552 termasuk batas output. Angka sampel ini bukan metrik produksi.
+- Regresi upstream: error Groq HTTP 413 dengan kode `rate_limit_exceeded` semula menjadi 502; sekarang menjadi 429 dengan pesan batas token dan `Retry-After`.
+- Total 21 pengujian otomatis, lint, TypeScript, dan build produksi lulus. Tokenizer memakai merge ranks o200k_base yang digunakan GPT-OSS; perhitungan menambah cadangan framing dan tetap menyisakan ruang di bawah 8.000 TPM per permintaan. Kuota gabungan organisasi tetap berlaku.

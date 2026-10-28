@@ -3,6 +3,9 @@ import assert from "node:assert/strict";
 import loadTs from "./load-ts.mjs";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import Groq from "groq-sdk";
+import { Tiktoken } from "js-tiktoken/lite";
+import o200kBase from "js-tiktoken/ranks/o200k_base";
 const originalFetch = global.fetch;
 const originalEnv = { ...process.env };
 afterEach(() => { global.fetch = originalFetch; process.env = { ...originalEnv }; });
@@ -209,4 +212,55 @@ test("activity queries for the older account do not select the newer account", a
   ]);
   assert.equal(urls.length, 1);
   assert.ok(urls[0].includes("/revanapriyandi19/legacy/"));
+});
+
+test("large private catalogs and long chat history stay below the input token budget", async () => {
+  process.env.GROQ_API_KEY = "test-only-provider-key";
+  const tokenizer = new Tiktoken(o200kBase);
+  let captured;
+  class FakeGroq {
+    chat = { completions: { create: async (options) => {
+      captured = options;
+      return (async function* () { yield { choices: [{ delta: { content: "Contoh absensi tersedia." } }] }; })();
+    } } };
+  }
+  const repos = Array.from({ length: 180 }, (_, i) => ({ fullName: `revanapriyandi/project-${i}`, name: `project-${i}`, private: true, language: "TypeScript", description: "A general web application with administration and reporting. ".repeat(12) }));
+  repos.push({ fullName: "revanapriyandi19/absensi-hr", name: "absensi-hr", private: true, language: "PHP", description: "Aplikasi absensi karyawan attendance employee HR." });
+  const route = loadTs("app/api/chat/route.ts", {
+    "groq-sdk": { __esModule: true, default: FakeGroq },
+    "@/utils/github": { getRepos: async () => repos },
+    "@/utils/github-activity": { getRepoActivity: async () => [] },
+    "@/utils/rate-limit": { clientIp: () => "test", rateLimiter: () => () => false },
+    "@/utils/db": { db: () => null, visitorHash: () => "test" },
+  });
+  const history = Array.from({ length: 10 }, (_, i) => ({ role: i % 2 ? "assistant" : "user", content: `Kebutuhan lama ${i} ${"pengelolaan transaksi dan laporan ".repeat(23)} [[repo:private/project:1793232000:${"a".repeat(64)}]]` }));
+  const question = "Saya perlu aplikasi absensi karyawan, apa contoh yang relevan?";
+  const response = await route.POST(new Request("http://localhost/api/chat", { method: "POST", body: JSON.stringify({ messages: [...history, { role: "user", content: question }] }) }));
+  await response.text();
+  const inputTokens = captured.messages.reduce((total, m) => total + tokenizer.encode(m.content, [], []).length + 64, 64);
+  assert.ok(inputTokens <= 4500, `Input has ${inputTokens} tokens`);
+  assert.equal(captured.messages.at(-1).content, question);
+  assert.ok(captured.messages[0].content.includes("revanapriyandi19/absensi-hr"));
+  assert.ok(captured.messages.slice(1).every(m => !m.content.includes("[[repo:")));
+  assert.ok(inputTokens + captured.max_completion_tokens < 8000);
+});
+
+test("Groq token-limit errors returned as HTTP 413 map to a clear 429 instead of 502", async () => {
+  process.env.GROQ_API_KEY = "test-only-provider-key";
+  class FakeGroq {
+    static RateLimitError = Groq.RateLimitError;
+    static AuthenticationError = Groq.AuthenticationError;
+    chat = { completions: { create: async () => { throw new Groq.APIError(413, { error: { code: "rate_limit_exceeded", type: "tokens", message: "Request too large on tokens per minute" } }, "Request too large", new Headers()); } } };
+  }
+  const route = loadTs("app/api/chat/route.ts", {
+    "groq-sdk": { __esModule: true, default: FakeGroq },
+    "@/utils/github": { getRepos: async () => [] },
+    "@/utils/github-activity": { getRepoActivity: async () => [] },
+    "@/utils/rate-limit": { clientIp: () => "test", rateLimiter: () => () => false },
+    "@/utils/db": { db: () => null, visitorHash: () => "test" },
+  });
+  const response = await route.POST(new Request("http://localhost/api/chat", { method: "POST", body: JSON.stringify({ messages: [{ role: "user", content: "Apa layanan Revan?" }] }) }));
+  assert.equal(response.status, 429);
+  assert.ok(Number(response.headers.get("retry-after")) > 0);
+  assert.match(await response.text(), /batas.*token|token.*limit/i);
 });

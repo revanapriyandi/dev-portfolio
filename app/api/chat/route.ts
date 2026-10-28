@@ -1,5 +1,6 @@
 import Groq from "groq-sdk";
-import { buildAssistantPrompt } from "@/utils/assistant-prompt";
+import { MAX_OUTPUT_TOKENS, prepareAssistantContext } from "@/utils/assistant-context";
+import { assistantError } from "@/utils/assistant-error";
 import { getRepos } from "@/utils/github";
 import { projectEvidenceSuffix } from "@/utils/assistant-evidence";
 import { getRepoActivity } from "@/utils/github-activity";
@@ -27,7 +28,7 @@ function parse(body: unknown): ChatMessage[] | null {
   return clean[clean.length - 1].role === "user" ? clean : null;
 }
 
-const text = (msg: string, status: number) => new Response(msg, { status, headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" } });
+const text = (msg: string, status: number, headers: Record<string, string> = {}) => new Response(msg, { status, headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store", ...headers } });
 
 async function logChat(request: Request, question: string, answer: string) {
   try {
@@ -55,16 +56,16 @@ export async function POST(request: Request) {
   }
   if (!process.env.GROQ_API_KEY) return text("The assistant is not configured yet.", 503);
 
-  const groq = new Groq();
-  const repos = await getRepos().catch(() => []);
-  const system = buildAssistantPrompt(repos, await getRepoActivity(question, repos));
   try {
+    const groq = new Groq({ maxRetries: 0, timeout: 20000 });
+    const repos = await getRepos().catch(() => []);
+    const context = prepareAssistantContext(repos, await getRepoActivity(question, repos), messages);
     const stream = await groq.chat.completions.create({
       model: MODEL,
-      messages: [{ role: "system", content: system }, ...messages],
+      messages: context.messages,
       stream: true,
       temperature: 0.2,
-      max_completion_tokens: 700,
+      max_completion_tokens: MAX_OUTPUT_TOKENS,
       reasoning_effort: "low",
       include_reasoning: false,
     });
@@ -95,8 +96,8 @@ export async function POST(request: Request) {
     });
     return new Response(body, { headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" } });
   } catch (err) {
-    if (err instanceof Groq.RateLimitError) return text("The assistant is busy right now. Please reach Revan on WhatsApp or try again later.", 429);
-    if (err instanceof Groq.AuthenticationError) return text("The assistant is not configured correctly.", 503);
-    return text("Something went wrong. Please try again, or contact Revan directly.", 502);
+    const failure = assistantError(err);
+    console.error("Aksa request failed", { status: failure.status, type: err instanceof Error ? err.name : "UnknownError" });
+    return text(failure.message, failure.status, failure.retryAfter ? { "Retry-After": String(failure.retryAfter) } : {});
   }
 }

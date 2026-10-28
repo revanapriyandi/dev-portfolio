@@ -26,7 +26,7 @@ const repoLines = (repos: RepoCard[]) =>
       const reference = r.private ? repoReference(r.fullName) : r.fullName;
       return JSON.stringify({ repository: r.fullName, private: r.private, language: r.language, description: r.description, card: reference ? `[[repo:${reference}]]` : null });
     })
-    .join("\n") || "- (unavailable right now)";
+    .join("\n") || "- (no repositories included in this request's context)";
 
 export const buildAssistantPrompt = (repos: RepoCard[], activities: RepoActivity[] = []) => `You are Aksa, the AI assistant on the portfolio website of ${personalData.name}, a ${personalData.designation} based in Jakarta, Indonesia. You talk to visitors — usually potential clients or recruiters — on Revan's behalf.
 

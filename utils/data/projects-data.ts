@@ -2,6 +2,7 @@
 export const projectsData = [
     {
         id: 1,
+        slug: 'accounting-erp',
         name: 'Accounting ERP',
         year: '2026',
         category: 'Enterprise · SaaS',
@@ -14,6 +15,7 @@ export const projectsData = [
     },
     {
         id: 2,
+        slug: 'production-tracker',
         name: 'Production Tracker',
         year: '2026',
         category: 'Manufacturing PWA',
@@ -26,6 +28,7 @@ export const projectsData = [
     },
     {
         id: 3,
+        slug: 'attendance-ess',
         name: 'Attendance & Employee Self-Service',
         year: '2026',
         category: 'HR · Web + Android',
@@ -38,6 +41,7 @@ export const projectsData = [
     },
     {
         id: 4,
+        slug: 'restaurant-pos',
         name: 'Restaurant POS & Self-Order',
         year: '2025',
         category: 'Point of Sale',
@@ -50,6 +54,7 @@ export const projectsData = [
     },
     {
         id: 5,
+        slug: 'nonprofit-platform',
         name: 'Nonprofit Foundation Platform',
         year: '2025',
         category: 'Website & CMS',
@@ -62,6 +67,7 @@ export const projectsData = [
     },
     {
         id: 6,
+        slug: 'industrial-company',
         name: 'Industrial Engineering Company Website',
         year: '2026',
         category: 'Company Profile',
@@ -74,6 +80,7 @@ export const projectsData = [
     },
     {
         id: 7,
+        slug: 'jemur',
         name: 'Jemur',
         year: '2026',
         category: 'Open source · Windows',
@@ -86,6 +93,7 @@ export const projectsData = [
     },
     {
         id: 8,
+        slug: 'autoclipper',
         name: 'AutoClipper',
         year: '2026',
         category: 'Open source · Desktop AI',

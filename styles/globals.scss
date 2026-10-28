@@ -261,9 +261,29 @@ html[data-splash="out"] .splash {
   }
 }
 
+/* Aksa pointing at a section or card: a pulsing accent ring, like a selection */
+.aksa-focus {
+  border-radius: 1.5rem;
+  animation: aksa-focus 1.2s ease-out 0.4s 2 both;
+}
+
+@keyframes aksa-focus {
+  0% {
+    box-shadow: 0 0 0 0 rgb(var(--accent) / 0.7), 0 0 0 2px rgb(var(--accent));
+  }
+  100% {
+    box-shadow: 0 0 0 18px rgb(var(--accent) / 0), 0 0 0 2px rgb(var(--accent) / 0.25);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+  }
+
+  .aksa-focus {
+    animation: none;
+    box-shadow: 0 0 0 2px rgb(var(--accent));
   }
 
   .marquee,

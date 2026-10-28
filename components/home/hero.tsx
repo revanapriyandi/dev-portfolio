@@ -18,6 +18,12 @@ const links = [
 export function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [book, setBook] = useState(false);
+  // Aksa's "Resume" button opens the same book
+  useEffect(() => {
+    const open = () => setBook(true);
+    window.addEventListener("aksa:open-resume", open);
+    return () => window.removeEventListener("aksa:open-resume", open);
+  }, []);
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", onScroll, { passive: true });

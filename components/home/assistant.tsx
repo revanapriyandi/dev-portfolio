@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { FiArrowUp, FiX } from "react-icons/fi";
 import { openWhatsApp } from "./sections";
+import { focusTarget, parseReply, ReplyActions } from "./aksa-actions";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
@@ -15,6 +16,30 @@ const GREETING: Msg = {
 };
 
 const SUGGESTIONS = ["What can Revan build for me?", "Tell me about the Accounting ERP", "Bagaimana cara mulai proyek?"];
+
+// Soft two-note chime made with Web Audio, so there's no sound file to ship.
+let audio: AudioContext | null = null;
+function chime() {
+  try {
+    audio ??= new AudioContext();
+    const t = audio.currentTime;
+    [880, 1320].forEach((freq, i) => {
+      const osc = audio!.createOscillator();
+      const gain = audio!.createGain();
+      osc.type = "sine";
+      osc.frequency.value = freq;
+      const start = t + i * 0.09;
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(0.06, start + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.35);
+      osc.connect(gain).connect(audio!.destination);
+      osc.start(start);
+      osc.stop(start + 0.4);
+    });
+  } catch {
+    // no audio support: stay silent
+  }
+}
 
 function Mark({ className = "" }: { className?: string }) {
   return (
@@ -31,11 +56,15 @@ export default function Assistant() {
   const [messages, setMessages] = useState<Msg[]>([GREETING]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
+  // a reply that finished while the panel was closed
+  const [unread, setUnread] = useState(false);
+  const openRef = useRef(open);
   const listRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
+    openRef.current = open;
     if (!open) return;
     inputRef.current?.focus();
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
@@ -54,6 +83,17 @@ export default function Assistant() {
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight });
   }, [messages]);
+
+  // phones: the panel covers the page, so get it out of the way first
+  const show = (target: string) => {
+    if (window.innerWidth < 640) setOpen(false);
+    focusTarget(target);
+  };
+
+  const openPanel = () => {
+    setOpen(true);
+    setUnread(false);
+  };
 
   const send = async (text: string) => {
     const q = text.trim();
@@ -86,6 +126,10 @@ export default function Assistant() {
         out += decoder.decode(value, { stream: true });
         update(out);
       }
+      if (out.trim()) chime();
+      if (!openRef.current) setUnread(true);
+      const { goto } = parseReply(out);
+      if (goto) show(goto);
       if (!out.trim()) update("I couldn't come up with an answer. Please try rephrasing.", true);
     } catch {
       update("Connection problem. Please check your internet and try again.", true);
@@ -99,6 +143,9 @@ export default function Assistant() {
     send(input);
   };
 
+  const last = messages[messages.length - 1];
+  const preview = last.role === "assistant" && !last.error ? parseReply(last.content).text : last.content;
+
   return (
     <>
       {/* launcher: sits above the mobile bottom tab bar */}
@@ -109,7 +156,7 @@ export default function Assistant() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.8 }}
             transition={{ duration: 0.3, ease }}
-            onClick={() => setOpen(true)}
+            onClick={openPanel}
             aria-label="Open Aksa, the AI assistant"
             className="fixed bottom-[calc(6rem+env(safe-area-inset-bottom))] right-4 z-[55] flex items-center gap-2.5 rounded-full border border-accent/40 bg-panel/90 p-2 shadow-[0_15px_40px_-10px_rgb(var(--accent)/0.45)] backdrop-blur-xl transition-colors hover:border-accent sm:pr-4 lg:bottom-6 lg:right-6"
           >
@@ -121,6 +168,32 @@ export default function Assistant() {
               </span>
             </span>
             <span className="hidden font-mono text-xs uppercase tracking-widest sm:inline">Ask Aksa</span>
+          </motion.button>
+        )}
+      </AnimatePresence>
+
+      {/* closed mid-reply: keep the answer visible next to the launcher */}
+      <AnimatePresence>
+        {!open && (busy || unread) && (
+          <motion.button
+            initial={{ opacity: 0, y: 8, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 8, scale: 0.95 }}
+            transition={{ duration: 0.25, ease }}
+            onClick={openPanel}
+            aria-label="Open Aksa to read the reply"
+            className="fixed bottom-[calc(10rem+env(safe-area-inset-bottom))] right-4 z-[55] w-[min(280px,calc(100vw-2rem))] rounded-2xl rounded-br-md border border-line bg-panel/95 px-3.5 py-2.5 text-left text-sm leading-relaxed shadow-[0_20px_50px_-15px_rgba(0,0,0,0.7)] backdrop-blur-xl hover:border-accent lg:bottom-24 lg:right-6"
+          >
+            <span className="mb-1 block font-mono text-[10px] uppercase tracking-widest text-accent">Aksa{busy ? " · typing" : ""}</span>
+            {preview && last.role === "assistant" ? (
+              <span className="line-clamp-3 text-fg">{preview}</span>
+            ) : (
+              <span className="flex gap-1 py-1" aria-label="Typing">
+                {[0, 1, 2].map((d) => (
+                  <motion.span key={d} className="h-1.5 w-1.5 rounded-full bg-muted" animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1, repeat: Infinity, delay: d * 0.2 }} />
+                ))}
+              </span>
+            )}
           </motion.button>
         )}
       </AnimatePresence>
@@ -152,27 +225,36 @@ export default function Assistant() {
             </header>
 
             <div ref={listRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-4" aria-live="polite">
-              {messages.map((m, i) => (
-                <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-                  <div
-                    className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
-                      m.role === "user"
-                        ? "rounded-br-md bg-accent text-ink"
-                        : m.error
-                          ? "rounded-bl-md border border-red-500/30 bg-red-500/10 text-fg"
-                          : "rounded-bl-md border border-line bg-ink/60 text-fg"
-                    }`}
-                  >
-                    {m.content || (
-                      <span className="flex gap-1 py-1" aria-label="Typing">
-                        {[0, 1, 2].map((d) => (
-                          <motion.span key={d} className="h-1.5 w-1.5 rounded-full bg-muted" animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1, repeat: Infinity, delay: d * 0.2 }} />
-                        ))}
-                      </span>
+              {messages.map((m, i) => {
+                const reply = m.role === "assistant" && !m.error ? parseReply(m.content) : null;
+                const streaming = busy && i === messages.length - 1;
+                const text = reply ? reply.text : m.content;
+                return (
+                  <div key={i} className={`flex flex-col ${m.role === "user" ? "items-end" : "items-start"}`}>
+                    {(text || streaming) && (
+                      <div
+                        className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
+                          m.role === "user"
+                            ? "rounded-br-md bg-accent text-ink"
+                            : m.error
+                              ? "rounded-bl-md border border-red-500/30 bg-red-500/10 text-fg"
+                              : "rounded-bl-md border border-line bg-ink/60 text-fg"
+                        }`}
+                      >
+                        {text || (
+                          <span className="flex gap-1 py-1" aria-label="Typing">
+                            {[0, 1, 2].map((d) => (
+                              <motion.span key={d} className="h-1.5 w-1.5 rounded-full bg-muted" animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1, repeat: Infinity, delay: d * 0.2 }} />
+                            ))}
+                          </span>
+                        )}
+                      </div>
                     )}
+                    {/* buttons wait for the full reply so they don't jump around while it streams */}
+                    {reply && !streaming && <ReplyActions reply={reply} onGoto={show} />}
                   </div>
-                </div>
-              ))}
+                );
+              })}
               {messages.length === 1 && (
                 <div className="flex flex-wrap gap-2 pt-1">
                   {SUGGESTIONS.map((s) => (

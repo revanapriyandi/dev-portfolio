@@ -361,6 +361,12 @@ export function Projects() {
   const [open, setOpen] = useState<{ p: Project; i: number } | null>(null);
   const [all, setAll] = useState(false);
   const shown = all ? projectsData : projectsData.slice(0, INITIAL_PROJECTS);
+  // Aksa can point at a project that's still behind "load more"
+  useEffect(() => {
+    const expand = () => setAll(true);
+    window.addEventListener("aksa:show-all-projects", expand);
+    return () => window.removeEventListener("aksa:show-all-projects", expand);
+  }, []);
   const more = projectsData.length - INITIAL_PROJECTS;
   const toggle = () => {
     if (all) document.getElementById("projects")?.scrollIntoView({ behavior: "smooth" });
@@ -375,6 +381,7 @@ export function Projects() {
           return (
             <motion.article
               key={p.id}
+              id={`project-${p.slug}`}
               onMouseMove={spot}
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}

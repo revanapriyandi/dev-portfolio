@@ -35,7 +35,6 @@ function BackCover() {
       <div className="grid-bg absolute inset-0" />
       <span className="relative text-accent">&gt; revan.dev</span>
       <span className="relative normal-case tracking-normal text-fg">{personalData.contact.email}</span>
-      <span className="relative">{personalData.contact.phone}</span>
     </div>
   );
 }

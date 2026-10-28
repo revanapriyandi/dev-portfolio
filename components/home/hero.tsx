@@ -36,7 +36,7 @@ export function Nav() {
           <a href="#top" className="flex min-h-11 items-center font-mono text-sm tracking-tight">
             <span className="text-accent">&gt;</span>&nbsp;revan<span className="text-muted">.dev</span>
           </a>
-          <ul className="hidden items-center gap-8 md:flex">
+          <ul className="hidden items-center gap-8 lg:flex">
             {links.map(([id, n]) => (
               <li key={id}>
                 <a href={`#${id}`} className="group font-mono text-xs uppercase tracking-widest text-muted transition-colors hover:text-fg">
@@ -138,7 +138,7 @@ function BottomNav() {
       initial={{ y: 120 }}
       animate={{ y: hidden ? 120 : 0 }}
       transition={{ duration: 0.5, ease }}
-      className="fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-50 md:hidden"
+      className="fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-50 mx-auto max-w-xl lg:hidden"
     >
       <div className="relative overflow-hidden rounded-[1.6rem] border border-line bg-panel/80 p-1.5 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.45)] backdrop-blur-2xl">
         <motion.span aria-hidden style={{ scaleX: scrollYProgress }} className="absolute inset-x-0 top-0 h-px origin-left bg-gradient-to-r from-accent to-cyan" />

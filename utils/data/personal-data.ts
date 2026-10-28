@@ -7,6 +7,7 @@ export const personalData = {
   contact: {
     email: "revanapriyandi88@gmail.com",
     phone: "+62 812-6186-5875",
+    whatsapp: "6281261865875",
     address: "DKI Jakarta, Indonesia",
   },
   socialLinks: {

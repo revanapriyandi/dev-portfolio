@@ -200,6 +200,18 @@ html[data-splash="out"] .splash {
   }
 }
 
+/* ---------- quick connect QR scan line ---------- */
+.qr-scan {
+  top: -2rem;
+  animation: qr-scan 2.6s ease-in-out infinite;
+}
+
+@keyframes qr-scan {
+  50% {
+    top: calc(100% - 0rem);
+  }
+}
+
 .blink {
   animation: blink 1s steps(1) infinite;
 }
@@ -217,6 +229,7 @@ html[data-splash="out"] .splash {
 
   .marquee,
   .name-wave,
+  .qr-scan,
   .blink {
     animation: none;
   }

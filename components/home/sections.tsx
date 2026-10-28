@@ -3,7 +3,7 @@
 import { AnimatePresence, animate, motion, useInView, useScroll, useTransform, type MotionValue } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
-import { FaGithub, FaLinkedinIn, FaStackOverflow, FaInstagram, FaStar } from "react-icons/fa";
+import { FaGithub, FaLinkedinIn, FaStackOverflow, FaInstagram, FaStar, FaWhatsapp } from "react-icons/fa";
 import { FiArrowUpRight, FiCheck, FiChevronLeft, FiChevronRight, FiCopy, FiX } from "react-icons/fi";
 import { personalData } from "@/utils/data/personal-data";
 import { experiences } from "@/utils/data/experience";
@@ -85,7 +85,7 @@ function Counter({ to, suffix = "", decimals = 0 }: { to: number; suffix?: strin
 }
 
 const statement =
-  "I turn business problems into dependable software — ERP and SaaS platforms, point-of-sale systems, foundation sites and Android apps. Laravel and Next.js on the back, React on the front, tuned PostgreSQL and MySQL in between. 22 clients came back for another order.";
+  "Since 2022 I have delivered 62 freelance orders for companies, small businesses and foundations across Indonesia: accounting ERPs, production trackers, cashier systems and Android apps. We talk before I write any code, I explain the trade-offs in plain language, and you get the full source code when we are done.";
 
 const terminal: [string, string][] = [
   ["$", "whoami"],
@@ -95,7 +95,7 @@ const terminal: [string, string][] = [
   ["", '  "front": ["React", "Inertia", "Tailwind"],'],
   ["", '  "mobile": ["Android", "Java"],'],
   ["", '  "data": ["PostgreSQL", "MySQL", "Redis"] }'],
-  ["$", "fastwork --stats"],
+  ["$", "freelance --stats"],
   ["", "62 orders · ★ 5.0 · 22 repeat clients"],
   ["$", "status --now"],
 ];
@@ -103,7 +103,7 @@ const terminal: [string, string][] = [
 // HUD-framed photo: corner brackets, ID label, one scan sweep when it enters view
 function Portrait() {
   return (
-    <figure className="force-dark group relative mx-auto aspect-[5/6] w-full max-w-md lg:max-w-none overflow-hidden rounded-2xl border border-line bg-ink shadow-[0_0_80px_-20px_rgb(var(--accent)/0.25)]">
+    <figure className="force-dark group relative aspect-[5/6] w-full overflow-hidden rounded-2xl border border-line bg-ink shadow-[0_0_80px_-20px_rgb(var(--accent)/0.25)]">
       <Image
         src="/profile-hud.webp"
         alt={personalData.name}
@@ -142,7 +142,7 @@ export function About() {
 
   return (
     <Section id="about">
-      <Head n="01" label="About" title={<>Engineer by trade,<br /><span className="text-muted">builder by habit.</span></>} />
+      <Head n="01" label="About" title={<>I build the software<br /><span className="text-muted">your business runs on.</span></>} />
       <div className="grid gap-12 lg:grid-cols-[1.3fr_1fr] lg:gap-16">
         <div>
           <p ref={ref} className="text-2xl font-medium leading-snug tracking-tight sm:text-3xl">
@@ -163,18 +163,18 @@ export function About() {
             ))}
           </div>
           <a href={personalData.socialLinks.fastwork} target="_blank" rel="noreferrer" className="mt-2 inline-flex min-h-11 items-center gap-1 font-mono text-xs uppercase tracking-widest text-muted hover:text-accent">
-            Verified on Fastwork <FiArrowUpRight />
+            See client reviews <FiArrowUpRight />
           </a>
         </div>
 
-        <Reveal delay={0.15}>
+        <Reveal delay={0.15} className="grid items-start gap-6 sm:grid-cols-[0.8fr_1.2fr] lg:grid-cols-1">
           <Portrait />
-          <div className="mx-auto mt-6 w-full max-w-md overflow-hidden force-dark rounded-2xl lg:max-w-none border border-line bg-panel shadow-[0_0_80px_-20px_rgb(var(--accent)/0.25)]">
+          <div className="w-full overflow-hidden force-dark rounded-2xl border border-line bg-panel shadow-[0_0_80px_-20px_rgb(var(--accent)/0.25)]">
             <div className="flex items-center gap-2 border-b border-line px-4 py-3">
               {["#ff5f57", "#febc2e", "#28c840"].map((c) => <span key={c} className="h-3 w-3 rounded-full" style={{ background: c }} />)}
               <span className="ml-3 font-mono text-xs text-muted">revan@jakarta: ~</span>
             </div>
-            <div className="space-y-1.5 p-5 font-mono text-[13px] leading-relaxed">
+            <div className="space-y-1.5 p-5 font-mono text-[12px] leading-relaxed lg:text-[13px]">
               {terminal.map(([p, t], i) => (
                 <motion.p
                   key={i}
@@ -500,6 +500,13 @@ export function Education() {
 
 /* ---------- contact ---------- */
 
+// The number is assembled on click instead of being written into the HTML, to keep it away from scrapers.
+const openWhatsApp = (e: MouseEvent<HTMLElement>) => {
+  e.preventDefault();
+  const text = encodeURIComponent("Halo Revan, saya lihat portofolio Anda dan ingin diskusi proyek.");
+  window.open(`https://wa.me/${personalData.contact.whatsapp}?text=${text}`, "_blank", "noopener");
+};
+
 const socials = [
   ["GitHub", personalData.socialLinks.github, FaGithub],
   ["LinkedIn", personalData.socialLinks.linkedIn, FaLinkedinIn],
@@ -562,9 +569,69 @@ export function Contact() {
   );
 }
 
+/* ---------- quick connect ---------- */
+
+// Two equal-weight ways to reach me from a phone: scan or tap.
+export function QuickConnect() {
+  const cards = [
+    {
+      label: "Direct",
+      title: "Chat on WhatsApp",
+      desc: "Fastest way to ask a question or describe your project.",
+      href: "#connect",
+      onClick: openWhatsApp,
+      qr: "/whatsapp-qr.svg",
+      cta: "Open WhatsApp",
+      Icon: FaWhatsapp,
+    },
+    {
+      label: "Platform",
+      title: "Order via Fastwork",
+      desc: "Prefer a marketplace with reviews and managed payment.",
+      href: personalData.socialLinks.fastwork,
+      onClick: undefined,
+      qr: "/fastwork-qr.svg",
+      cta: "Open profile",
+      Icon: FiArrowUpRight,
+    },
+  ];
+
+  return (
+    <section id="connect" className="relative mx-auto max-w-7xl px-4 pb-24 sm:px-8 sm:pb-32">
+      <Reveal className="mb-8">
+        <p className="flex items-center gap-3 font-mono text-xs uppercase tracking-[0.2em] text-muted">
+          <span className="text-accent">[07]</span> Quick connect <span className="h-px w-16 bg-line" />
+        </p>
+      </Reveal>
+      <div className="grid gap-4 lg:grid-cols-2">
+        {cards.map(({ label, title, desc, href, onClick, qr, cta, Icon }, i) => (
+          <Reveal key={title} delay={i * 0.08}>
+            <div onMouseMove={spot} className="spotlight group flex h-full items-center gap-5 rounded-2xl border border-line bg-panel p-5 shadow-card transition-colors hover:border-accent/40 sm:gap-7 sm:p-7">
+              <a href={href} onClick={onClick} target="_blank" rel="noreferrer" aria-label={`${title} QR code`} className="relative shrink-0">
+                <span className="relative block overflow-hidden rounded-xl bg-white p-1.5">
+                  <Image src={qr} alt="" width={120} height={120} unoptimized className="h-24 w-24 sm:h-28 sm:w-28" />
+                  <span aria-hidden className="qr-scan pointer-events-none absolute inset-x-1.5 h-8 bg-gradient-to-b from-transparent via-accent/40 to-transparent" />
+                </span>
+              </a>
+              <div className="min-w-0">
+                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">{label} · scan or tap</p>
+                <h3 className="mt-1 text-xl font-semibold tracking-tight sm:text-2xl">{title}</h3>
+                <p className="mt-1 text-sm leading-relaxed text-muted">{desc}</p>
+                <a href={href} onClick={onClick} target="_blank" rel="noreferrer" className="mt-3 inline-flex min-h-11 items-center gap-2 font-mono text-xs uppercase tracking-widest text-fg transition-colors hover:text-accent">
+                  <Icon /> {cta}
+                </a>
+              </div>
+            </div>
+          </Reveal>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export function Footer() {
   return (
-    <footer className="border-t border-line pb-24 md:pb-0">
+    <footer className="border-t border-line pb-24 lg:pb-0">
       <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-8 font-mono text-xs text-muted sm:flex-row sm:justify-between sm:px-8">
         <span>© {new Date().getFullYear()} {personalData.name}</span>
         <span>Designed &amp; built in Jakarta · Next.js + Framer Motion</span>
